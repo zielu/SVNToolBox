@@ -1,0 +1,52 @@
+<idea-plugin version="2">
+  <id>zielu.svntoolbox</id>
+  <name>SVNToolBox</name>
+  <version>1.0.0</version>
+  <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
+  <depends>Subversion</depends>
+  <description><![CDATA[Enriches SVN integration with:
+    <ul>
+      <li>Status bar component that:
+        <ul>
+          <li>displays branch for currently open file</li>
+          <li>shows tooltip with URL for currently open file</li>
+        </ul>
+      </li>
+    </ul>
+    ]]>
+  </description>
+
+  <change-notes><![CDATA[
+      Add change notes here.<br>
+      <small>most HTML tags may be used</small>
+      ]]>
+  </change-notes>
+
+  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="107.105"/>
+
+  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
+
+  <application-components>
+    <!-- Add your application components here -->
+  </application-components>
+
+  <project-components>
+    <component>
+      <implementation-class>zielu.svntoolbox.SVNToolBox</implementation-class>
+    </component>
+    <!-- Add your project components here -->
+  </project-components>
+
+  <actions>
+    <!-- Add your actions here -->
+  </actions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+  </extensions>
+</idea-plugin>
