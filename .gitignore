@@ -1,3 +1,7 @@
+# Idea Files #
+.idea/
+*.iml
+
 *.class
 
 # Package Files #
