@@ -3,14 +3,11 @@
  */
 package zielu.svntoolbox;
 
-import com.intellij.ide.projectView.ProjectView;
-import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerAdapter;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
@@ -27,14 +24,15 @@ import zielu.svntoolbox.ui.SvnBranchWidget;
  *
  * @author Lukasz Zielinski
  */
-public class SVNToolBox implements ProjectComponent {
+public class SVNToolBox extends AbstractProjectComponent {
     private final Project myProject;
 
     private SvnBranchWidget myBranchWidget;
     private ToolWindowManagerListener myToolWindowManagerListener;
     
-    public SVNToolBox(@NotNull Project myProject) {
-        this.myProject = myProject;
+    public SVNToolBox(@NotNull Project project) {
+        super(project);
+        this.myProject = project;
     }
     
     private void connect(final ToolWindowManagerEx toolWindowManager) {
@@ -101,21 +99,5 @@ public class SVNToolBox implements ProjectComponent {
                 disconnect((ToolWindowManagerEx) toolWindowManager);   
             }*/
         }
-    }
-
-    @Override
-    public void initComponent() {
-        //TODO: auto-generated method implementation
-    }
-
-    @Override
-    public void disposeComponent() {
-        //TODO: auto-generated method implementation
-    }
-
-    @NotNull
-    @Override
-    public String getComponentName() {
-        return getClass().getSimpleName();
     }
 }

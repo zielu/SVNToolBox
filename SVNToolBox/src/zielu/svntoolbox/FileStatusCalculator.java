@@ -8,6 +8,7 @@ import java.io.File;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.svn.SvnStatusUtil;
 import org.jetbrains.idea.svn.SvnUtil;
 import org.jetbrains.idea.svn.SvnVcs;
@@ -23,6 +24,15 @@ import org.tmatesoft.svn.core.wc.SVNInfo;
  */
 public class FileStatusCalculator {
 
+    @NotNull
+    public FileStatus statusFor(@Nullable Project project, @NotNull VirtualFile vFile) {
+        if (project == null) {
+            return new FileStatus();
+        }
+        SvnVcs svn = SvnVcs.getInstance(project);
+        return statusFor(svn, project, vFile);
+    }
+    
     @NotNull
     public FileStatus statusFor(@NotNull SvnVcs svn, @NotNull Project project, @NotNull VirtualFile vFile) {
         if (SvnStatusUtil.isUnderControl(project, vFile)) {

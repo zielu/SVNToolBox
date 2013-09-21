@@ -145,7 +145,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     }
     
     private String prepareBranchText(FileStatus status) {
-        StringBuilder text = new StringBuilder("Svn:");
+        StringBuilder text = new StringBuilder("Svn: ");
         if (status.getBranch().isPresent()) {            
             /*if (status.getBranchDirectory().isPresent()) {
                 text.append(status.getBranchDirectory().get()).append("/");                
