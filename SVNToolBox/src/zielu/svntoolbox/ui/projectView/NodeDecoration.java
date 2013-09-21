@@ -24,6 +24,7 @@ import org.jetbrains.idea.svn.SvnUtil;
 import zielu.svntoolbox.FileStatus;
 import zielu.svntoolbox.FileStatusCalculator;
 
+import java.awt.Color;
 import java.io.File;
 
 /**
@@ -188,6 +189,9 @@ public enum NodeDecoration {
     ;
 
     protected final FileStatusCalculator statusCalc = new FileStatusCalculator();
+    protected final static Color BRANCH_COLOR = new JBColor(new Color(159, 107, 0), new Color(159, 107, 0));
+    protected final static SimpleTextAttributes BRANCH_ATTRIBUTES = 
+            new SimpleTextAttributes(SimpleTextAttributes.STYLE_SMALLER, BRANCH_COLOR);
     
     protected abstract void decorate(ProjectViewNode node, PresentationData data);
     public abstract String getName(ProjectViewNode node);
@@ -195,8 +199,7 @@ public enum NodeDecoration {
     protected abstract boolean isSwitchedAware();
     
     protected ColoredFragment formatBranchName(String branchName) {
-        return new ColoredFragment(" [Svn: "+branchName+"]", 
-            new SimpleTextAttributes(SimpleTextAttributes.STYLE_SMALLER, JBColor.ORANGE));
+        return new ColoredFragment(" [Svn: "+branchName+"]", BRANCH_ATTRIBUTES);
     }
     
     protected boolean isUnderSvn(ProjectViewNode node) {
