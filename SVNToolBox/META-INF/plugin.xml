@@ -51,6 +51,7 @@
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
+      <!--<projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator"/>-->
     <!-- Add your extensions here -->
   </extensions>
 </idea-plugin>

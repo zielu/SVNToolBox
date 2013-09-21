@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
@@ -28,6 +29,9 @@ import org.jetbrains.idea.svn.dialogs.BranchConfigurationDialog;
 import zielu.svntoolbox.FileStatus;
 import zielu.svntoolbox.FileStatusCalculator;
 
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+
 /**
  * <p></p>
  * <br/>
@@ -36,7 +40,7 @@ import zielu.svntoolbox.FileStatusCalculator;
  * @author Lukasz Zielinski
  */
 public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidget.Multiframe, StatusBarWidget.TextPresentation {
-    private final static String NA = "Non-Svn";
+    private final static String NA = "Svn: N/A";
     private final static String EMPTY_BRANCH = "Not configured";
 
     private final FileStatusCalculator myStatusCalculator = new FileStatusCalculator();
@@ -141,20 +145,20 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     }
     
     private String prepareBranchText(FileStatus status) {
-        if (status.getBranch().isPresent()) {
-            StringBuilder text = new StringBuilder();
-            if (status.getBranchDirectory().isPresent()) {
+        StringBuilder text = new StringBuilder("Svn:");
+        if (status.getBranch().isPresent()) {            
+            /*if (status.getBranchDirectory().isPresent()) {
                 text.append(status.getBranchDirectory().get()).append("/");                
-            }
+            }*/
             if (status.getBranchName().isPresent()) {
                 text.append(status.getBranchName().get());
             } else {
                 text.append(EMPTY_BRANCH);
-            }
-            return text.toString();   
+            }   
         } else {
-            return EMPTY_BRANCH;
+            text.append(EMPTY_BRANCH);
         }
+        return text.toString();
     }
     
     private boolean setText(String text) {
