@@ -48,7 +48,7 @@ public enum NodeDecoration {
         }
 
         @Override
-        protected boolean isSwitchedAware() {
+        protected boolean isAppliedOnlyForSwitched() {
             return false;
         }
 
@@ -72,7 +72,7 @@ public enum NodeDecoration {
         }
 
         @Override
-        protected boolean isSwitchedAware() {
+        protected boolean isAppliedOnlyForSwitched() {
             return true;
         }
 
@@ -100,7 +100,7 @@ public enum NodeDecoration {
         }
 
         @Override
-        protected boolean isSwitchedAware() {
+        protected boolean isAppliedOnlyForSwitched() {
             return true;
         }
 
@@ -127,7 +127,7 @@ public enum NodeDecoration {
         }
 
         @Override
-        protected boolean isSwitchedAware() {
+        protected boolean isAppliedOnlyForSwitched() {
             return true;
         }
 
@@ -163,11 +163,11 @@ public enum NodeDecoration {
         }
 
         @Override
-        protected boolean isSwitchedAware() {
+        protected boolean isAppliedOnlyForSwitched() {
             return true;
         }
     },
-    Other {
+    None {
         @Override
         public String getName(ProjectViewNode node) {
             return null;
@@ -179,7 +179,7 @@ public enum NodeDecoration {
         }
 
         @Override
-        protected boolean isSwitchedAware() {
+        protected boolean isAppliedOnlyForSwitched() {
             return false;
         }
 
@@ -196,7 +196,7 @@ public enum NodeDecoration {
     protected abstract void decorate(ProjectViewNode node, PresentationData data);
     public abstract String getName(ProjectViewNode node);
     protected abstract VirtualFile getVirtualFile(ProjectViewNode node);
-    protected abstract boolean isSwitchedAware();
+    protected abstract boolean isAppliedOnlyForSwitched();
     
     protected ColoredFragment formatBranchName(String branchName) {
         return new ColoredFragment(" [Svn: "+branchName+"]", BRANCH_ATTRIBUTES);
@@ -212,7 +212,7 @@ public enum NodeDecoration {
     
     public void apply(ProjectViewNode node, PresentationData data) {
         if (isUnderSvn(node)) {
-            if (isSwitchedAware()) {
+            if (isAppliedOnlyForSwitched()) {
                 ChangeListManager manager = ChangeListManagerEx.getInstance(node.getProject());
                 if (manager != null) {
                     if (manager.getStatus(getVirtualFile(node)).equals(
@@ -235,7 +235,7 @@ public enum NodeDecoration {
             final Object parentValue = dirNode.getParent().getValue();
             //System.out.println("Parent: "+parentValue.getClass().getName());
             if (parentValue instanceof Project || parentValue instanceof ModuleGroup) {
-                return NodeDecoration.Module; 
+                return NodeDecoration.Module;
             } else if (ProjectRootsUtil.isModuleContentRoot(directoryFile, project) 
                     || ProjectRootsUtil.isSourceOrTestRoot(directoryFile, project)) {
                 return NodeDecoration.ContentRoot;
@@ -251,6 +251,6 @@ public enum NodeDecoration {
         } else if (node instanceof PsiFileNode) {
             return NodeDecoration.File;
         }
-        return NodeDecoration.Other;
+        return NodeDecoration.None;
     }
 }

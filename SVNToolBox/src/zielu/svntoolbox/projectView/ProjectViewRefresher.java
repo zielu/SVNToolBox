@@ -27,7 +27,7 @@ public class ProjectViewRefresher extends AbstractProjectComponent {
         MessageBusConnection connection = myProject.getMessageBus().connect();
         connection.subscribe(DecorationToggleNotifier.TOGGLE_TOPIC, new DecorationToggleNotifier() {
             @Override
-            public void toggleDecorations(boolean show) {
+            public void decorationChanged() {
                 ProjectView projectView = ProjectView.getInstance(myProject);
                 projectView.refresh();
             }

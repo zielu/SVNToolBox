@@ -27,12 +27,19 @@ public class SvnProjectViewNodeDecorator implements ProjectViewNodeDecorator {
         if (node != null) {
             Project project = node.getProject();
             if (project != null) {
-                if (SvnToolBoxState.getInstance(project).showProjectViewDecoration) {
+                SvnToolBoxState config = SvnToolBoxState.getInstance(project);
+                if (config.showingAnyDecorations()) {
                     NodeDecoration type = NodeDecoration.fromNode(node);
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Node: " + type + " " + node + " " + node.getClass().getName());
                     }
-                    type.apply(node, data);
+                    if (type == NodeDecoration.Module) {
+                        if (config.showProjectViewModuleDecoration) {
+                            type.apply(node, data);
+                        }
+                    } else if (config.showProjectViewSwitchedDecoration) {
+                        type.apply(node, data);
+                    }
                 }
             }
             

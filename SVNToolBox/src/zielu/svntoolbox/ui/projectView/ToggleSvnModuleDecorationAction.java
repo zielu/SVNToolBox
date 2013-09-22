@@ -16,13 +16,13 @@ import zielu.svntoolbox.projectView.DecorationToggleNotifier;
  *
  * @author Lukasz Zielinski
  */
-public class ToggleSvnDecorationAction extends ToggleAction {
+public class ToggleSvnModuleDecorationAction extends ToggleAction {
     
     @Override
     public boolean isSelected(AnActionEvent e) {
         Project project = e.getProject();
         if (project != null) {
-            return SvnToolBoxState.getInstance(project).showProjectViewDecoration;
+            return SvnToolBoxState.getInstance(project).showProjectViewModuleDecoration;
         }
         return false;
     }
@@ -31,9 +31,9 @@ public class ToggleSvnDecorationAction extends ToggleAction {
     public void setSelected(AnActionEvent e, boolean state) {
         Project project = e.getProject();
         if (project != null) {
-            SvnToolBoxState.getInstance(project).showProjectViewDecoration = state;
+            SvnToolBoxState.getInstance(project).showProjectViewModuleDecoration = state;
             project.getMessageBus().
-                    syncPublisher(DecorationToggleNotifier.TOGGLE_TOPIC).toggleDecorations(state);
+                    syncPublisher(DecorationToggleNotifier.TOGGLE_TOPIC).decorationChanged();
         }
     }
 

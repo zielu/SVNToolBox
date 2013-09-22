@@ -59,8 +59,10 @@
   <actions>
     <!-- Add your actions here -->
     <group id="SvnToolBox.Menu" popup="true" text="Svn ToolBox">
-      <action id="SvnToolBox.ToggleProjectViewDecoration" 
-              class="zielu.svntoolbox.ui.projectView.ToggleSvnDecorationAction" text="Show branches in Project View"/>
+      <action id="SvnToolBox.ToggleModuleProjectViewDecoration" 
+        class="zielu.svntoolbox.ui.projectView.ToggleSvnModuleDecorationAction" text="Show module branches in Project View"/>
+      <action id="SvnToolBox.ToggleSwitchedProjectViewDecoration" 
+        class="zielu.svntoolbox.ui.projectView.ToggleSvnSwitchedDecorationAction" text="Show switched branches in Project View"/>
       <add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="SubversionFilePopupGroup"/>
     </group>
   </actions>

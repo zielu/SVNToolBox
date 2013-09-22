@@ -29,11 +29,17 @@ import org.jetbrains.annotations.Nullable;
     }
 )
 public class SvnToolBoxState implements PersistentStateComponent<SvnToolBoxState> {
-    public boolean showProjectViewDecoration = true;
+    public boolean showProjectViewModuleDecoration = true;
+    public boolean showProjectViewSwitchedDecoration = true;
     
     public static SvnToolBoxState getInstance(@NotNull Project project) {
         return PeriodicalTasksCloser.getInstance().safeGetService(project, SvnToolBoxState.class);
     }
+    
+    public boolean showingAnyDecorations() {
+        return showProjectViewModuleDecoration || showProjectViewSwitchedDecoration;
+    }
+    
     
     @Nullable
     @Override

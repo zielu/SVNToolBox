@@ -15,5 +15,5 @@ import com.intellij.util.messages.Topic;
 public interface DecorationToggleNotifier {
     Topic<DecorationToggleNotifier> TOGGLE_TOPIC = Topic.create("Toggle decorations", DecorationToggleNotifier.class);
     
-    void toggleDecorations(boolean show);
+    void decorationChanged();
 }
