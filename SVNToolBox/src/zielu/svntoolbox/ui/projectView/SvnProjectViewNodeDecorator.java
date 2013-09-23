@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.packageDependencies.ui.PackageDependenciesNode;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import zielu.svntoolbox.SvnToolBoxState;
+import zielu.svntoolbox.util.LogStopwatch;
 
 /**
  * <p></p>
@@ -28,7 +29,7 @@ public class SvnProjectViewNodeDecorator implements ProjectViewNodeDecorator {
             Project project = node.getProject();
             if (project != null) {
                 SvnToolBoxState config = SvnToolBoxState.getInstance(project);
-                if (config.showingAnyDecorations()) {
+                if (config.showingAnyDecorations()) {                    
                     NodeDecoration type = NodeDecoration.fromNode(node);
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Node: " + type + " " + node + " " + node.getClass().getName());
@@ -38,7 +39,9 @@ public class SvnProjectViewNodeDecorator implements ProjectViewNodeDecorator {
                             type.apply(node, data);
                         }
                     } else if (config.showProjectViewSwitchedDecoration) {
+                        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "Switched decoration").start();
                         type.apply(node, data);
+                        watch.stop();
                     }
                 }
             }

@@ -1,7 +1,7 @@
 /* 
  * @(#) $Id:  $
  */
-package zielu.svntoolbox.ui.projectView;
+package zielu.svntoolbox.ui.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.ToggleAction;

@@ -11,21 +11,20 @@ import com.intellij.ide.projectView.impl.nodes.ClassTreeNode;
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode;
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode;
 import com.intellij.ide.util.treeView.PresentableNodeDescriptor.ColoredFragment;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.changes.ChangeListManager;
-import com.intellij.openapi.vcs.changes.ChangeListManagerEx;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.util.PsiUtilBase;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import org.jetbrains.idea.svn.SvnStatusUtil;
-import org.jetbrains.idea.svn.SvnUtil;
 import zielu.svntoolbox.FileStatus;
 import zielu.svntoolbox.FileStatusCalculator;
+import zielu.svntoolbox.util.LogStopwatch;
 
 import java.awt.Color;
-import java.io.File;
 
 /**
  * <p></p>
@@ -80,7 +79,7 @@ public enum NodeDecoration {
         protected void decorate(ProjectViewNode node, PresentationData data) {
             FileStatus status = statusCalc.statusFor(node.getProject(), getVirtualFile(node));
             if (status.getBranchName().isPresent()) {
-                data.addText(getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+                addSmartText(data, getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
                 data.addText(formatBranchName(status.getBranchName().get()));
             }
         }
@@ -108,7 +107,7 @@ public enum NodeDecoration {
         protected void decorate(ProjectViewNode node, PresentationData data) {
             FileStatus status = statusCalc.statusFor(node.getProject(), getVirtualFile(node));
             if (status.getBranchName().isPresent()) {
-                data.addText(getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+                addSmartText(data, getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
                 data.addText(formatBranchName(status.getBranchName().get()));
             }
         }
@@ -135,7 +134,7 @@ public enum NodeDecoration {
         protected void decorate(ProjectViewNode node, PresentationData data) {
             FileStatus status = statusCalc.statusFor(node.getProject(), getVirtualFile(node));
             if (status.getBranchName().isPresent()) {
-                data.addText(getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+                addSmartText(data, getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
                 data.addText(formatBranchName(status.getBranchName().get()));
             }
         }
@@ -145,7 +144,7 @@ public enum NodeDecoration {
         protected void decorate(ProjectViewNode node, PresentationData data) {
             FileStatus status = statusCalc.statusFor(node.getProject(), getVirtualFile(node));
             if (status.getBranchName().isPresent()) {
-                data.addText(getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+                addSmartText(data, getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
                 data.addText(formatBranchName(status.getBranchName().get()));
             }
         }
@@ -188,6 +187,8 @@ public enum NodeDecoration {
     }
     ;
 
+    protected final static Logger LOG = Logger.getInstance(NodeDecoration.class);
+    
     protected final FileStatusCalculator statusCalc = new FileStatusCalculator();
     protected final static Color BRANCH_COLOR = new JBColor(new Color(159, 107, 0), new Color(159, 107, 0));
     protected final static SimpleTextAttributes BRANCH_ATTRIBUTES = 
@@ -198,26 +199,47 @@ public enum NodeDecoration {
     protected abstract VirtualFile getVirtualFile(ProjectViewNode node);
     protected abstract boolean isAppliedOnlyForSwitched();
     
+    protected void addSmartText(PresentationData data, String text, SimpleTextAttributes attributes) {
+        boolean add = true;
+        for (ColoredFragment existing : data.getColoredText()) {
+            if(existing.getText().equals(text)) {
+                add = false;
+            }
+        }
+        if (add) {
+            data.addText(text, attributes);
+        }
+    }
+    
     protected ColoredFragment formatBranchName(String branchName) {
         return new ColoredFragment(" [Svn: "+branchName+"]", BRANCH_ATTRIBUTES);
     }
     
     protected boolean isUnderSvn(ProjectViewNode node) {
+        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "Under SVN").start();
         VirtualFile vFile = getVirtualFile(node);
-        if (vFile != null && SvnStatusUtil.isUnderControl(node.getProject(), vFile)) {
-            return SvnUtil.isSvnVersioned(node.getProject(), new File(vFile.getPath()));
+        watch.tick("Get VFile");
+        boolean result = false;                
+        if (vFile != null) {
+            boolean underControl = SvnStatusUtil.isUnderControl(node.getProject(), vFile);
+            watch.tick("Under control");
+            result = underControl;
         }
-        return false;
+        return result;
     }
     
-    public void apply(ProjectViewNode node, PresentationData data) {
+    public void apply(ProjectViewNode node, PresentationData data) {        
         if (isUnderSvn(node)) {
             if (isAppliedOnlyForSwitched()) {
-                ChangeListManager manager = ChangeListManagerEx.getInstance(node.getProject());
+                LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "Switched").start();
+                ChangeListManager manager = ChangeListManager.getInstance(node.getProject());
                 if (manager != null) {
-                    if (manager.getStatus(getVirtualFile(node)).equals(
+                    com.intellij.openapi.vcs.FileStatus status = manager.getStatus(getVirtualFile(node));
+                    watch.tick("Check status");
+                    if (status.equals(
                             com.intellij.openapi.vcs.FileStatus.SWITCHED)) {
                         decorate(node, data);
+                        watch.tick("Decoration");
                     }
                 }
             } else {
@@ -227,6 +249,9 @@ public enum NodeDecoration {
     }
     
     public static NodeDecoration fromNode(ProjectViewNode node) {
+        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "Node type detection").start();
+        
+        NodeDecoration result = NodeDecoration.None; 
         if (node instanceof PsiDirectoryNode) {
             PsiDirectoryNode dirNode = (PsiDirectoryNode) node;
             final Project project = dirNode.getProject();
@@ -235,22 +260,25 @@ public enum NodeDecoration {
             final Object parentValue = dirNode.getParent().getValue();
             //System.out.println("Parent: "+parentValue.getClass().getName());
             if (parentValue instanceof Project || parentValue instanceof ModuleGroup) {
-                return NodeDecoration.Module;
+                result = NodeDecoration.Module;
             } else if (ProjectRootsUtil.isModuleContentRoot(directoryFile, project) 
                     || ProjectRootsUtil.isSourceOrTestRoot(directoryFile, project)) {
-                return NodeDecoration.ContentRoot;
+                result = NodeDecoration.ContentRoot;
             } else if (ProjectRootsUtil.isInSource(directoryFile, project) || 
                     ProjectRootsUtil.isInTestSource(directoryFile, project)) {
-                return Package;
+                result = Package;
             }
         } else if (node instanceof ClassTreeNode) {
             ClassTreeNode classNode = (ClassTreeNode) node;
             if (classNode.isTopLevel()) {
-                return NodeDecoration.ClassFile;
+                result = NodeDecoration.ClassFile;
             }
         } else if (node instanceof PsiFileNode) {
-            return NodeDecoration.File;
+            result = NodeDecoration.File;
         }
-        return NodeDecoration.None;
+        
+        watch.stop();
+        
+        return result;
     }
 }

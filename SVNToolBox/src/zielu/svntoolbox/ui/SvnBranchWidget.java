@@ -3,14 +3,11 @@
  */
 package zielu.svntoolbox.ui;
 
-import java.awt.Component;
-import java.awt.event.MouseEvent;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
-import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.project.Project;
@@ -28,9 +25,12 @@ import org.jetbrains.idea.svn.SvnVcs;
 import org.jetbrains.idea.svn.dialogs.BranchConfigurationDialog;
 import zielu.svntoolbox.FileStatus;
 import zielu.svntoolbox.FileStatusCalculator;
+import zielu.svntoolbox.util.LogStopwatch;
 
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import java.awt.Component;
+import java.awt.event.MouseEvent;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * <p></p>
@@ -40,11 +40,15 @@ import javax.swing.event.TreeSelectionListener;
  * @author Lukasz Zielinski
  */
 public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidget.Multiframe, StatusBarWidget.TextPresentation {
+    private final Logger LOG = Logger.getInstance(getClass());
+    
     private final static String NA = "Svn: N/A";
     private final static String EMPTY_BRANCH = "Not configured";
 
     private final FileStatusCalculator myStatusCalculator = new FileStatusCalculator();
     private final MessageBusConnection myBranchesChangedConnection;
+    
+    private final static boolean READ_INFO_IN_OTHER_THREAD = true;
     
     private String myText = NA;            
     private String myToolTip = "";        
@@ -107,31 +111,31 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
         return new Consumer<MouseEvent>() {
             @Override
             public void consume(MouseEvent mouseEvent) {                
-                updateLater(true);
+                runUpdate(true);
             }
         };
     }
 
     @Override
     public void fileOpened(FileEditorManager source, VirtualFile file) {
-        updateLater();
+        runUpdate();
     }
 
     @Override
     public void fileClosed(FileEditorManager source, VirtualFile file) {
-        updateLater();
+        runUpdate();
     }
 
     @Override
     public void selectionChanged(FileEditorManagerEvent event) {
-        updateLater();
+        runUpdate();
     }
 
     private Notification getBranchesChangedNotification() {
         return new Notification() {
             @Override
             public void execute(Project project, VirtualFile vcsRoot) {
-                updateLater(project, Optional.fromNullable(vcsRoot));            
+                runUpdate(project, Optional.fromNullable(vcsRoot));            
             }
         };    
     }
@@ -147,9 +151,6 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     private String prepareBranchText(FileStatus status) {
         StringBuilder text = new StringBuilder("Svn: ");
         if (status.getBranch().isPresent()) {            
-            /*if (status.getBranchDirectory().isPresent()) {
-                text.append(status.getBranchDirectory().get()).append("/");                
-            }*/
             if (status.getBranchName().isPresent()) {
                 text.append(status.getBranchName().get());
             } else {
@@ -177,69 +178,108 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
         return false;
     } 
     
-    private void updateLater() {
-        updateLater(false);
+    private void runUpdate() {
+        runUpdate(false);
     }
     
-    private void updateLater(final boolean maybeOpenBranchConfig) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+    private void runUpdate(final boolean maybeOpenBranchConfig) {
+        Runnable update = new Runnable() {
             @Override
             public void run() {
-                Optional<UpdateResult> maybeResult = update();
-                if (maybeOpenBranchConfig && maybeResult.isPresent()) {
-                    UpdateResult result = maybeResult.get();
-                    if (result.canConfigureBranches() && !result.status.getBranch().isPresent()) {                        
-                        BranchConfigurationDialog.configureBranches(result.project, result.file);    
-                    }
-                }
+                final Optional<UpdateResult> maybeResult = update();
+                updateUi(maybeResult, maybeOpenBranchConfig);
             }
-        });
+        };
+        execUpdate(update);        
     }        
     
-    private void updateLater(final @NotNull Project project, final Optional<VirtualFile> vcsRoot) {
-        ApplicationManager.getApplication().invokeLater(new Runnable() {
+    private void runUpdate(final @NotNull Project project, final Optional<VirtualFile> vcsRoot) {
+        Runnable update = new Runnable() {
             @Override
             public void run() {
-                update(project, vcsRoot);     
+                final Optional<UpdateResult> maybeResult = update(project, vcsRoot);
+                updateUi(maybeResult, false);
             }
-        });
+        };
+        execUpdate(update);        
+    }
+    
+    private void execUpdate(Runnable updateTask) {
+        if (READ_INFO_IN_OTHER_THREAD) {
+            ApplicationManager.getApplication().executeOnPooledThread(updateTask);    
+        } else {
+            ApplicationManager.getApplication().runReadAction(updateTask);    
+        }            
     }
     
     private boolean isChildOf(VirtualFile child, VirtualFile parent) {
         return VfsUtilCore.isAncestor(parent, child, true);    
     }
     
+    private void updateUi(final Optional<UpdateResult> maybeResult, final boolean maybeOpenBranchConfig) {
+        if (maybeResult.isPresent()) {
+            ApplicationManager.getApplication().invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "UpdateUi").start();
+                    UpdateResult result = maybeResult.get();
+                    boolean empty = true;
+                    AtomicBoolean updated = new AtomicBoolean();
+                    if (result.status.isUnderVcs()) {
+                        updated.compareAndSet(false, setToolTip(result.status.getURL().toDecodedString()));
+                        empty = false;
+                        updated.compareAndSet(false, setText(prepareBranchText(result.status)));
+                    }
+                    if (empty) {
+                        updated.compareAndSet(false, empty());    
+                    }
+                    if (updated.get()) {
+                        myStatusBar.updateWidget(ID());                    
+                    }
+                    watch.stop();
+                    if (maybeOpenBranchConfig && maybeResult.isPresent()) {
+                        if (result.canConfigureBranches() && !result.status.getBranch().isPresent()) {
+                            BranchConfigurationDialog.configureBranches(result.project, result.file);
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    private VirtualFile getCurrentFile() {
+        if (READ_INFO_IN_OTHER_THREAD) {
+            final AtomicReference<VirtualFile> selectedFile = new AtomicReference<VirtualFile>();
+            ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    selectedFile.set(getSelectedFile());
+                }
+            }, ModalityState.any());
+            return selectedFile.get();
+        } else {
+            return getSelectedFile();
+        }
+    }
+    
     private Optional<UpdateResult> update(@NotNull Project project, Optional<VirtualFile> vcsRoot) {
+        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "Update").start();
         SvnVcs svn = SvnVcs.getInstance(project);
-        boolean empty = true;
         FileStatus status = null;
         VirtualFile currentVf = null;
-        AtomicBoolean updated = new AtomicBoolean();
         if (svn != null) {                    
-            currentVf = getSelectedFile();
+            currentVf = getCurrentFile();
             if (currentVf != null) {
                 boolean calculateStatus = true;
                 if (vcsRoot.isPresent()) {
                     calculateStatus = isChildOf(currentVf, vcsRoot.get());                    
                 }
                 if (calculateStatus) {
-                    status = myStatusCalculator.statusFor(svn, project, currentVf);
-                    if (status.isUnderVcs()) {
-                        updated.compareAndSet(false, setToolTip(status.getURL().toDecodedString()));                                
-                        empty = false;                            
-                        updated.compareAndSet(false, setText(prepareBranchText(status)));
-                    }
-                } else {
-                    empty = false;
+                    status = myStatusCalculator.statusFor(svn, project, currentVf);                    
                 }
             }
         }                
-        if (empty) {
-            updated.compareAndSet(false, empty());
-        }
-        if (updated.get()) {
-            myStatusBar.updateWidget(ID());                    
-        }
+        watch.stop();
         return Optional.of(new UpdateResult(project, currentVf, status));    
     }
     
