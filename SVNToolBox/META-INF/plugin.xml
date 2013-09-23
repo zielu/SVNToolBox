@@ -21,6 +21,11 @@
           <li>can be toggled in VCS -> Svn ToolBox</li>
         </ul>
       </li>
+      <li><b>Additional Subversion context menu actions:</b>
+        <ul>
+          <li>'Configure branches' extracted from 'Update' dialog as item</li>
+        </ul>
+      </li>
     </ul>
     ]]>
   </description>
@@ -29,6 +34,7 @@
       <h3>Changes is 1.0.0</h3>
       <ul>
         <li>optimized Project View decorations</li>
+        <li>Extract 'Configure branches...' to 'Subversion' context menu</li>
       <ul>
       ]]>
   </change-notes>
@@ -65,6 +71,10 @@
         class="zielu.svntoolbox.ui.actions.ToggleSvnSwitchedDecorationAction" text="Show switched branches in Project View"/>
       <add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="SubversionFilePopupGroup"/>
     </group>
+    <action id="SvnToolBox.ConfigureBranches"  class="zielu.svntoolbox.ui.actions.ConfigureBranchesAction" 
+            text="Configure branches...">
+      <add-to-group group-id="SubversionFilePopupGroup" anchor="last"/>
+    </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
