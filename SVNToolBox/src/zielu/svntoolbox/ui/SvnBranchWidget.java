@@ -48,7 +48,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     private final FileStatusCalculator myStatusCalculator = new FileStatusCalculator();
     private final MessageBusConnection myBranchesChangedConnection;
     
-    private final static boolean READ_INFO_IN_OTHER_THREAD = true;
+    private final static boolean READ_INFO_IN_OTHER_THREAD = false;
     
     private String myText = NA;            
     private String myToolTip = "";        
