@@ -5,6 +5,7 @@ package zielu.svntoolbox;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.ToolWindow;
@@ -25,16 +26,18 @@ import zielu.svntoolbox.ui.SvnBranchWidget;
  * @author Lukasz Zielinski
  */
 public class SVNToolBox extends AbstractProjectComponent {
+    private final Logger LOG = Logger.getInstance(getClass());
+
     private final Project myProject;
 
     private SvnBranchWidget myBranchWidget;
     private ToolWindowManagerListener myToolWindowManagerListener;
-    
+
     public SVNToolBox(@NotNull Project project) {
         super(project);
         this.myProject = project;
     }
-    
+
     private void connect(final ToolWindowManagerEx toolWindowManager) {
         myToolWindowManagerListener = new ToolWindowManagerAdapter() {
             @Override
@@ -48,13 +51,13 @@ public class SVNToolBox extends AbstractProjectComponent {
                         public void contentAdded(ContentManagerEvent event) {
                             //System.out.println("Content: "+event.getContent());
                             if ("Project".equals(event.getContent().getDisplayName())) {
-                                System.out.println("Project content: "+event.getContent().getComponent());
+                                System.out.println("Project content: " + event.getContent().getComponent());
                             }
                         }
 
                         @Override
                         public void selectionChanged(ContentManagerEvent event) {
-                            System.out.println("Selection: "+event.getContent().getComponent());
+                            System.out.println("Selection: " + event.getContent().getComponent());
                         }
                     });
                 }
@@ -62,13 +65,13 @@ public class SVNToolBox extends AbstractProjectComponent {
         };
         toolWindowManager.addToolWindowManagerListener(myToolWindowManagerListener);
     }
-    
+
     private void disconnect(ToolWindowManagerEx toolWindowManager) {
         if (myToolWindowManagerListener != null) {
             toolWindowManager.removeToolWindowManagerListener(myToolWindowManagerListener);
         }
     }
-    
+
     @Override
     public void projectOpened() {
         if (!ApplicationManager.getApplication().isHeadlessEnvironment()) {
@@ -85,6 +88,7 @@ public class SVNToolBox extends AbstractProjectComponent {
             /*final ToolWindow projectWindow = toolWindowManager.getToolWindow("Project");
             System.out.println("Project: "+projectWindow);*/
         }
+        LOG.debug("Project opened");
     }
 
     @Override
@@ -99,5 +103,6 @@ public class SVNToolBox extends AbstractProjectComponent {
                 disconnect((ToolWindowManagerEx) toolWindowManager);   
             }*/
         }
+        LOG.debug("Project closed");
     }
 }

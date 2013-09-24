@@ -41,18 +41,18 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidget.Multiframe, StatusBarWidget.TextPresentation {
     private final Logger LOG = Logger.getInstance(getClass());
-    
+
     private final static String NA = "Svn: N/A";
     private final static String EMPTY_BRANCH = "Not configured";
 
     private final FileStatusCalculator myStatusCalculator = new FileStatusCalculator();
     private final MessageBusConnection myBranchesChangedConnection;
-    
+
     private final static boolean READ_INFO_IN_OTHER_THREAD = false;
-    
-    private String myText = NA;            
-    private String myToolTip = "";        
-    
+
+    private String myText = NA;
+    private String myToolTip = "";
+
     public SvnBranchWidget(@NotNull Project project) {
         super(project);
         myBranchesChangedConnection = project.getMessageBus().connect(this);
@@ -60,7 +60,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     }
 
     @Override
-    public void dispose() {        
+    public void dispose() {
         myBranchesChangedConnection.disconnect();
         super.dispose();
     }
@@ -110,7 +110,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     public Consumer<MouseEvent> getClickConsumer() {
         return new Consumer<MouseEvent>() {
             @Override
-            public void consume(MouseEvent mouseEvent) {                
+            public void consume(MouseEvent mouseEvent) {
                 runUpdate(true);
             }
         };
@@ -135,53 +135,53 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
         return new Notification() {
             @Override
             public void execute(Project project, VirtualFile vcsRoot) {
-                runUpdate(project, Optional.fromNullable(vcsRoot));            
+                runUpdate(project, Optional.fromNullable(vcsRoot));
             }
-        };    
+        };
     }
-    
-    private boolean empty() {        
+
+    private boolean empty() {
         boolean result = setToolTip("");
         if (setText(NA) && !result) {
             result = true;
         }
         return result;
     }
-    
+
     private String prepareBranchText(FileStatus status) {
         StringBuilder text = new StringBuilder("Svn: ");
-        if (status.getBranch().isPresent()) {            
+        if (status.getBranch().isPresent()) {
             if (status.getBranchName().isPresent()) {
                 text.append(status.getBranchName().get());
             } else {
                 text.append(EMPTY_BRANCH);
-            }   
+            }
         } else {
             text.append(EMPTY_BRANCH);
         }
         return text.toString();
     }
-    
+
     private boolean setText(String text) {
         if (!Objects.equal(myText, text)) {
             myText = text;
             return true;
         }
         return false;
-    }        
-    
+    }
+
     private boolean setToolTip(String toolTip) {
         if (!Objects.equal(myToolTip, toolTip)) {
             myToolTip = toolTip;
             return true;
         }
         return false;
-    } 
-    
+    }
+
     private void runUpdate() {
         runUpdate(false);
     }
-    
+
     private void runUpdate(final boolean maybeOpenBranchConfig) {
         Runnable update = new Runnable() {
             @Override
@@ -190,9 +190,9 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
                 updateUi(maybeResult, maybeOpenBranchConfig);
             }
         };
-        execUpdate(update);        
-    }        
-    
+        execUpdate(update);
+    }
+
     private void runUpdate(final @NotNull Project project, final Optional<VirtualFile> vcsRoot) {
         Runnable update = new Runnable() {
             @Override
@@ -201,21 +201,23 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
                 updateUi(maybeResult, false);
             }
         };
-        execUpdate(update);        
+        execUpdate(update);
     }
-    
+
     private void execUpdate(Runnable updateTask) {
         if (READ_INFO_IN_OTHER_THREAD) {
-            ApplicationManager.getApplication().executeOnPooledThread(updateTask);    
+            LOG.debug("Will execute update in pool");
+            ApplicationManager.getApplication().executeOnPooledThread(updateTask);
         } else {
-            ApplicationManager.getApplication().runReadAction(updateTask);    
-        }            
+            LOG.debug("Will execute update as readAction");
+            ApplicationManager.getApplication().runReadAction(updateTask);
+        }
     }
-    
+
     private boolean isChildOf(VirtualFile child, VirtualFile parent) {
-        return VfsUtilCore.isAncestor(parent, child, true);    
+        return VfsUtilCore.isAncestor(parent, child, true);
     }
-    
+
     private void updateUi(final Optional<UpdateResult> maybeResult, final boolean maybeOpenBranchConfig) {
         if (maybeResult.isPresent()) {
             ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -225,28 +227,30 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
                     UpdateResult result = maybeResult.get();
                     boolean empty = true;
                     AtomicBoolean updated = new AtomicBoolean();
-                    if (result.status.isUnderVcs()) {
-                        updated.compareAndSet(false, setToolTip(result.status.getURL().toDecodedString()));
-                        empty = false;
-                        updated.compareAndSet(false, setText(prepareBranchText(result.status)));
-                    }
-                    if (empty) {
-                        updated.compareAndSet(false, empty());    
-                    }
-                    if (updated.get()) {
-                        myStatusBar.updateWidget(ID());                    
-                    }
-                    watch.stop();
-                    if (maybeOpenBranchConfig && maybeResult.isPresent()) {
-                        if (result.canConfigureBranches() && !result.status.getBranch().isPresent()) {
-                            BranchConfigurationDialog.configureBranches(result.project, result.file);
+                    if (result.hasStatus()) {
+                        if (result.status.isUnderVcs()) {
+                            updated.compareAndSet(false, setToolTip(result.status.getURL().toDecodedString()));
+                            empty = false;
+                            updated.compareAndSet(false, setText(prepareBranchText(result.status)));
+                        }
+                        if (empty) {
+                            updated.compareAndSet(false, empty());
+                        }
+                        if (updated.get()) {
+                            myStatusBar.updateWidget(ID());
+                        }
+                        watch.stop();
+                        if (maybeOpenBranchConfig && maybeResult.isPresent()) {
+                            if (result.canConfigureBranches() && !result.status.getBranch().isPresent()) {
+                                BranchConfigurationDialog.configureBranches(result.project, result.file);
+                            }
                         }
                     }
                 }
             });
         }
     }
-    
+
     private VirtualFile getCurrentFile() {
         if (READ_INFO_IN_OTHER_THREAD) {
             final AtomicReference<VirtualFile> selectedFile = new AtomicReference<VirtualFile>();
@@ -261,28 +265,28 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
             return getSelectedFile();
         }
     }
-    
+
     private Optional<UpdateResult> update(@NotNull Project project, Optional<VirtualFile> vcsRoot) {
         LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "Update").start();
         SvnVcs svn = SvnVcs.getInstance(project);
         FileStatus status = null;
         VirtualFile currentVf = null;
-        if (svn != null) {                    
+        if (svn != null) {
             currentVf = getCurrentFile();
             if (currentVf != null) {
                 boolean calculateStatus = true;
                 if (vcsRoot.isPresent()) {
-                    calculateStatus = isChildOf(currentVf, vcsRoot.get());                    
+                    calculateStatus = isChildOf(currentVf, vcsRoot.get());
                 }
                 if (calculateStatus) {
-                    status = myStatusCalculator.statusFor(svn, project, currentVf);                    
+                    status = myStatusCalculator.statusFor(svn, project, currentVf);
                 }
             }
-        }                
+        }
         watch.stop();
-        return Optional.of(new UpdateResult(project, currentVf, status));    
+        return Optional.of(new UpdateResult(project, currentVf, status));
     }
-    
+
     private Optional<UpdateResult> update() {
         if (isDisposed()) {
             return Optional.absent();
@@ -295,10 +299,10 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
             return update(project, Optional.<VirtualFile>absent());
         }
     }
-    
+
     private class UpdateResult {
         private Project project;
-        private VirtualFile file;        
+        private VirtualFile file;
         private FileStatus status;
 
         private UpdateResult(Project project, VirtualFile file, FileStatus status) {
@@ -306,7 +310,11 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
             this.file = file;
             this.status = status;
         }
-        
+
+        public boolean hasStatus() {
+            return status != null;
+        }
+
         public boolean canConfigureBranches() {
             return project != null && file != null && status != null;
         }

@@ -3,6 +3,7 @@
  */
 package zielu.svntoolbox.projectView;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.Topic;
 
 /**
@@ -14,6 +15,6 @@ import com.intellij.util.messages.Topic;
  */
 public interface DecorationToggleNotifier {
     Topic<DecorationToggleNotifier> TOGGLE_TOPIC = Topic.create("Toggle decorations", DecorationToggleNotifier.class);
-    
-    void decorationChanged();
+
+    void decorationChanged(Project project);
 }

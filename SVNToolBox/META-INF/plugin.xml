@@ -38,16 +38,16 @@
       ]]>
   </change-notes>
 
-  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="129.298" until-build="129.9999"/>
+    <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
+    <idea-version since-build="129.298" until-build="129.9999" />
 
-  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
-       on how to target different products -->
-  <!-- uncomment to enable plugin in all products
-  <depends>com.intellij.modules.lang</depends>
-  -->
+    <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
 
-  <application-components>
+    <application-components>
     <!-- Add your application components here -->
   </application-components>
 
@@ -56,29 +56,29 @@
       <implementation-class>zielu.svntoolbox.SVNToolBox</implementation-class>
     </component>
     <component>
-      <implementation-class>zielu.svntoolbox.projectView.ProjectViewRefresher</implementation-class>  
+      <implementation-class>zielu.svntoolbox.projectView.ProjectViewManager</implementation-class>  
     </component>
-    <!-- Add your project components here -->
+      <!-- Add your project components here -->
   </project-components>
 
   <actions>
     <!-- Add your actions here -->
-    <group id="SvnToolBox.Menu" popup="true" text="Svn ToolBox">
-      <action id="SvnToolBox.ToggleModuleProjectViewDecoration" 
-        class="zielu.svntoolbox.ui.actions.ToggleSvnModuleDecorationAction" text="Show module branches in Project View"/>
-      <action id="SvnToolBox.ToggleSwitchedProjectViewDecoration" 
-        class="zielu.svntoolbox.ui.actions.ToggleSvnSwitchedDecorationAction" text="Show switched branches in Project View"/>
-      <add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="SubversionFilePopupGroup"/>
+      <group id="SvnToolBox.Menu" popup="true" text="Svn ToolBox">
+      <action id="SvnToolBox.ToggleModuleProjectViewDecoration"
+              class="zielu.svntoolbox.ui.actions.ToggleSvnModuleDecorationAction" text="Show module branches in Project View" />
+      <action id="SvnToolBox.ToggleSwitchedProjectViewDecoration"
+              class="zielu.svntoolbox.ui.actions.ToggleSvnSwitchedDecorationAction" text="Show switched branches in Project View" />
+      <add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="SubversionFilePopupGroup" />
     </group>
-    <action id="SvnToolBox.ConfigureBranches"  class="zielu.svntoolbox.ui.actions.ConfigureBranchesAction" 
+    <action id="SvnToolBox.ConfigureBranches" class="zielu.svntoolbox.ui.actions.ConfigureBranchesAction"
             text="Configure branches...">
-      <add-to-group group-id="SubversionFilePopupGroup" anchor="last"/>
+      <add-to-group group-id="SubversionFilePopupGroup" anchor="last" />
     </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
-      <projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator"/>
-      <projectService serviceImplementation="zielu.svntoolbox.SvnToolBoxState"/>
-    <!-- Add your extensions here -->
+      <projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator" />
+      <projectService serviceImplementation="zielu.svntoolbox.SvnToolBoxState" />
+      <!-- Add your extensions here -->
   </extensions>
 </idea-plugin>

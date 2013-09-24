@@ -17,7 +17,7 @@ import zielu.svntoolbox.projectView.DecorationToggleNotifier;
  * @author Lukasz Zielinski
  */
 public class ToggleSvnModuleDecorationAction extends ToggleAction {
-    
+
     @Override
     public boolean isSelected(AnActionEvent e) {
         Project project = e.getProject();
@@ -33,7 +33,7 @@ public class ToggleSvnModuleDecorationAction extends ToggleAction {
         if (project != null) {
             SvnToolBoxState.getInstance(project).showProjectViewModuleDecoration = state;
             project.getMessageBus().
-                    syncPublisher(DecorationToggleNotifier.TOGGLE_TOPIC).decorationChanged();
+                    syncPublisher(DecorationToggleNotifier.TOGGLE_TOPIC).decorationChanged(project);
         }
     }
 
