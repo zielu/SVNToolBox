@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.packageDependencies.ui.PackageDependenciesNode;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import zielu.svntoolbox.SvnToolBoxState;
+import zielu.svntoolbox.projectView.ProjectViewManager;
 import zielu.svntoolbox.util.LogStopwatch;
 
 /**
@@ -22,17 +23,18 @@ import zielu.svntoolbox.util.LogStopwatch;
  */
 public class SvnProjectViewNodeDecorator implements ProjectViewNodeDecorator {
     private final Logger LOG = Logger.getInstance(getClass());
-    
+
     @Override
     public void decorate(ProjectViewNode node, PresentationData data) {
         if (node != null) {
             Project project = node.getProject();
             if (project != null) {
                 SvnToolBoxState config = SvnToolBoxState.getInstance(project);
-                if (config.showingAnyDecorations()) {                    
+                if (config.showingAnyDecorations()) {
                     NodeDecoration type = NodeDecoration.fromNode(node);
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Node: " + type + " " + node + " " + node.getClass().getName());
+                        final int seq = ProjectViewManager.getInstance(project).PV_SEQ.incrementAndGet();
+                        LOG.debug("[" + seq + "] Node: " + type + " " + node + " " + node.getClass().getName());
                     }
                     if (type == NodeDecoration.Module) {
                         if (config.showProjectViewModuleDecoration) {
@@ -45,12 +47,14 @@ public class SvnProjectViewNodeDecorator implements ProjectViewNodeDecorator {
                     }
                 }
             }
-            
+
         }
     }
-    
+
     @Override
     public void decorate(PackageDependenciesNode node, ColoredTreeCellRenderer cellRenderer) {
-        //TODO: auto-generated method implementation
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Decorate package dependencies");
+        }
     }
 }

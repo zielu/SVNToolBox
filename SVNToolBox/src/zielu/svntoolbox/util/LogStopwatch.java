@@ -3,9 +3,10 @@
  */
 package zielu.svntoolbox.util;
 
-import java.util.concurrent.TimeUnit;
-
 import com.intellij.openapi.diagnostic.Logger;
+
+import java.text.MessageFormat;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p></p>
@@ -16,62 +17,64 @@ import com.intellij.openapi.diagnostic.Logger;
  */
 public abstract class LogStopwatch {
     protected final Logger LOG;
-    private final String name;
-    private long start;
-    private long lastTick;
-    
+    private final String myName;
+    private long myStart;
+    private long myLastTick;
+
     protected LogStopwatch(Logger log, String name) {
         LOG = log;
-        this.name = name;
+        this.myName = name;
     }
-    
+
     public LogStopwatch start() {
         if (isEnabled()) {
-            startInternal();                        
+            startInternal();
         }
         return this;
     }
-    
+
     private void startInternal() {
-        start = System.nanoTime();        
+        myStart = System.nanoTime();
     }
-    
-    public void tick(String message) {
+
+    public void tick(String message, Object... args) {
         if (isEnabled()) {
-            long time = tickInternal();                     
-            log("[T:" + name + "] " + message + " [" + TimeUnit.MILLISECONDS.convert(time, TimeUnit.NANOSECONDS) + " ms]");
+            long time = tickInternal();
+            String formattedMessage = MessageFormat.format(message, args);
+            log("[T:" + myName + "] " + formattedMessage + " [" + TimeUnit.MILLISECONDS.convert(time, TimeUnit.NANOSECONDS) + " ms]");
         }
     }
-    
+
     private long tickInternal() {
         long tick = System.nanoTime();
         long time;
-        if (lastTick == 0) {
-            time = tick - start;                
+        if (myLastTick == 0) {
+            time = tick - myStart;
         } else {
-            time = tick - lastTick;    
+            time = tick - myLastTick;
         }
-        lastTick = tick;
+        myLastTick = tick;
         return time;
     }
-    
+
     public void stop() {
         if (isEnabled()) {
             long time = stopInternal();
-            log("[" + name + "] stopped [" + TimeUnit.MILLISECONDS.convert(time, TimeUnit.NANOSECONDS) + " ms]");            
+            log("[" + myName + "] stopped [" + TimeUnit.MILLISECONDS.convert(time, TimeUnit.NANOSECONDS) + " ms]");
         }
     }
 
     private long stopInternal() {
-        long time = System.nanoTime() - start;
-        start = 0;
-        lastTick = 0;
+        long time = System.nanoTime() - myStart;
+        myStart = 0;
+        myLastTick = 0;
         return time;
     }
-    
+
     protected abstract boolean isEnabled();
+
     protected abstract void log(String message);
-    
+
     public static LogStopwatch debugStopwatch(Logger log, String name) {
         return new LogStopwatch(log, name) {
             @Override
@@ -83,6 +86,6 @@ public abstract class LogStopwatch {
             protected void log(String message) {
                 LOG.debug(message);
             }
-        };    
+        };
     }
 }

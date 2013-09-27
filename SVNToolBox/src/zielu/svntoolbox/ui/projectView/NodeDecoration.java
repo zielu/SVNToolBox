@@ -8,24 +8,24 @@ import com.intellij.ide.projectView.ProjectViewNode;
 import com.intellij.ide.projectView.impl.ModuleGroup;
 import com.intellij.ide.projectView.impl.ProjectRootsUtil;
 import com.intellij.ide.projectView.impl.nodes.ClassTreeNode;
+import com.intellij.ide.projectView.impl.nodes.ProjectViewDirectoryHelper;
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode;
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode;
 import com.intellij.ide.util.treeView.PresentableNodeDescriptor.ColoredFragment;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.util.PsiUtilBase;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.svn.SvnStatusUtil;
 import zielu.svntoolbox.FileStatus;
 import zielu.svntoolbox.FileStatusCalculator;
 import zielu.svntoolbox.projectView.ProjectViewManager;
 import zielu.svntoolbox.projectView.ProjectViewStatus;
 import zielu.svntoolbox.projectView.ProjectViewStatusCache;
+import zielu.svntoolbox.projectView.ProjectViewStatusCache.PutResult;
 import zielu.svntoolbox.util.LogStopwatch;
 
 import java.awt.Color;
@@ -51,13 +51,8 @@ public enum NodeDecoration {
         }
 
         @Override
-        protected boolean isAppliedOnlyForSwitched() {
-            return false;
-        }
-
-        @Override
         protected void decorate(ProjectViewNode node, PresentationData data) {
-            String branchName = getBranchNameAndCache(node, null);
+            String branchName = getBranchNameAndCache(node);
             if (branchName != null) {
                 data.addText(formatBranchName(branchName));
             }
@@ -75,13 +70,8 @@ public enum NodeDecoration {
         }
 
         @Override
-        protected boolean isAppliedOnlyForSwitched() {
-            return true;
-        }
-
-        @Override
         protected void decorate(ProjectViewNode node, PresentationData data) {
-            String branchName = getBranchNameAndCache(node, true);
+            String branchName = getBranchNameAndCache(node);
             if (branchName != null) {
                 addSmartText(data, getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
                 data.addText(formatBranchName(branchName));
@@ -93,8 +83,10 @@ public enum NodeDecoration {
         public String getName(ProjectViewNode node) {
             PsiDirectoryNode dirNode = (PsiDirectoryNode) node;
             final PsiDirectory psiDirectory = dirNode.getValue();
-            final VirtualFile directoryFile = psiDirectory.getVirtualFile();
-            return directoryFile.getName();
+            //as in com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode.updateImpl            
+            String name = ProjectViewDirectoryHelper.getInstance(psiDirectory.getProject()).getNodeName(node.getSettings(),
+                    getParentValue(node), psiDirectory);
+            return name;
         }
 
         @Override
@@ -103,13 +95,8 @@ public enum NodeDecoration {
         }
 
         @Override
-        protected boolean isAppliedOnlyForSwitched() {
-            return true;
-        }
-
-        @Override
         protected void decorate(ProjectViewNode node, PresentationData data) {
-            String branchName = getBranchNameAndCache(node, true);
+            String branchName = getBranchNameAndCache(node);
             if (branchName != null) {
                 addSmartText(data, getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
                 data.addText(formatBranchName(branchName));
@@ -130,13 +117,8 @@ public enum NodeDecoration {
         }
 
         @Override
-        protected boolean isAppliedOnlyForSwitched() {
-            return true;
-        }
-
-        @Override
         protected void decorate(ProjectViewNode node, PresentationData data) {
-            String branchName = getBranchNameAndCache(node, true);
+            String branchName = getBranchNameAndCache(node);
             if (branchName != null) {
                 addSmartText(data, getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
                 data.addText(formatBranchName(branchName));
@@ -146,7 +128,7 @@ public enum NodeDecoration {
     ClassFile {
         @Override
         protected void decorate(ProjectViewNode node, PresentationData data) {
-            String branchName = getBranchNameAndCache(node, true);
+            String branchName = getBranchNameAndCache(node);
             if (branchName != null) {
                 addSmartText(data, getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
                 data.addText(formatBranchName(branchName));
@@ -164,11 +146,6 @@ public enum NodeDecoration {
             ClassTreeNode classNode = (ClassTreeNode) node;
             return PsiUtilBase.getVirtualFile(classNode.getPsiClass());
         }
-
-        @Override
-        protected boolean isAppliedOnlyForSwitched() {
-            return true;
-        }
     },
     None {
         @Override
@@ -182,18 +159,13 @@ public enum NodeDecoration {
         }
 
         @Override
-        protected boolean isAppliedOnlyForSwitched() {
-            return false;
-        }
-
-        @Override
         protected void decorate(ProjectViewNode node, PresentationData data) {
         }
     };
 
     protected final static Logger LOG = Logger.getInstance(NodeDecoration.class);
 
-    protected final FileStatusCalculator statusCalc = new FileStatusCalculator();
+    protected final FileStatusCalculator myStatusCalc = new FileStatusCalculator();
     protected final static Color BRANCH_COLOR = new JBColor(new Color(159, 107, 0), new Color(159, 107, 0));
     protected final static SimpleTextAttributes BRANCH_ATTRIBUTES =
             new SimpleTextAttributes(SimpleTextAttributes.STYLE_SMALLER, BRANCH_COLOR);
@@ -204,32 +176,36 @@ public enum NodeDecoration {
 
     protected abstract VirtualFile getVirtualFile(ProjectViewNode node);
 
-    protected abstract boolean isAppliedOnlyForSwitched();
+    protected Object getParentValue(ProjectViewNode node) {
+        return node.getParent() != null ? node.getParent().getValue() : null;
+    }
 
     @Nullable
-    protected String getBranchNameAndCache(ProjectViewNode node, @Nullable Boolean switched) {
+    protected String getBranchNameAndCache(ProjectViewNode node) {
         ProjectViewStatusCache cache = ProjectViewManager.getInstance(node.getProject()).getStatusCache();
         VirtualFile vFile = getVirtualFile(node);
-        ProjectViewStatus cached = cache.getBranch(vFile);
-        String branchName = null;
+        ProjectViewStatus cached = cache.get(vFile);
         if (cached != null) {
             if (!cached.isEmpty()) {
-                branchName = cached.getBranchName();
+                return cached.getBranchName();
             }
         } else {
-            FileStatus status = statusCalc.statusFor(node.getProject(), vFile);
+            FileStatus status = myStatusCalc.statusFor(node.getProject(), vFile);
+            PutResult result;
             if (status.getBranchName().isPresent()) {
-                branchName = status.getBranchName().get();
-                if (switched != null) {
-                    cache.put(vFile, new ProjectViewStatus(branchName, switched));
-                } else {
-                    cache.put(vFile, new ProjectViewStatus(branchName));
-                }
+                result = cache.add(vFile, new ProjectViewStatus(status.getBranchName().get()));
             } else {
-                cache.put(vFile, new ProjectViewStatus());
+                result = cache.add(vFile, ProjectViewStatus.EMPTY);
+            }
+            if (result != null) {
+                if (result.getFinalStatus().isEmpty()) {
+                    return null;
+                } else {
+                    return result.getFinalStatus().getBranchName();
+                }
             }
         }
-        return branchName;
+        return null;
     }
 
     protected void addSmartText(PresentationData data, String text, SimpleTextAttributes attributes) {
@@ -248,46 +224,31 @@ public enum NodeDecoration {
         return new ColoredFragment(" [Svn: " + branchName + "]", BRANCH_ATTRIBUTES);
     }
 
-    protected boolean isUnderSvn(ProjectViewNode node) {
-        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "Under SVN").start();
+    protected boolean isUnderSvn(ProjectViewNode node, ProjectViewManager manager) {
+        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "[" + manager.PV_SEQ.incrementAndGet() + "] Under SVN").start();
         VirtualFile vFile = getVirtualFile(node);
         watch.tick("Get VFile");
         boolean result = false;
         if (vFile != null) {
-            boolean underControl = SvnStatusUtil.isUnderControl(node.getProject(), vFile);
-            watch.tick("Under control");
+            boolean underControl = myStatusCalc.filesUnderSvn(node.getProject(), vFile);
+            watch.tick("Under control={0}", underControl);
             result = underControl;
         }
         return result;
     }
 
     public void apply(ProjectViewNode node, PresentationData data) {
-        if (isUnderSvn(node)) {
-            if (isAppliedOnlyForSwitched()) {
-                LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "Switched").start();
-                ChangeListManager manager = ChangeListManager.getInstance(node.getProject());
-                if (manager != null) {
-                    ProjectViewStatusCache cache = ProjectViewManager.getInstance(node.getProject()).getStatusCache();
-                    VirtualFile vFile = getVirtualFile(node);
-                    com.intellij.openapi.vcs.FileStatus status = manager.getStatus(vFile);
-                    watch.tick("Check status");
-                    if (status.equals(
-                            com.intellij.openapi.vcs.FileStatus.SWITCHED)) {
-                        cache.evictNotSwitched(vFile);
-                        decorate(node, data);
-                        watch.tick("Decoration");
-                    } else {
-                        cache.evictSwitched(vFile);
-                    }
-                }
-            } else {
-                decorate(node, data);
-            }
+        ProjectViewManager pvManager = ProjectViewManager.getInstance(node.getProject());
+        if (isUnderSvn(node, pvManager)) {
+            LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "[" + pvManager.PV_SEQ.incrementAndGet() + "] Switched").start();
+            decorate(node, data);
+            watch.tick("Decoration");
         }
     }
 
     public static NodeDecoration fromNode(ProjectViewNode node) {
-        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "Node type detection").start();
+        ProjectViewManager pvManager = ProjectViewManager.getInstance(node.getProject());
+        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "[" + pvManager.PV_SEQ.incrementAndGet() + "] Node type detection").start();
 
         NodeDecoration result = NodeDecoration.None;
         if (node instanceof PsiDirectoryNode) {
@@ -296,7 +257,6 @@ public enum NodeDecoration {
             final PsiDirectory psiDirectory = dirNode.getValue();
             final VirtualFile directoryFile = psiDirectory.getVirtualFile();
             final Object parentValue = dirNode.getParent().getValue();
-            //System.out.println("Parent: "+parentValue.getClass().getName());
             if (parentValue instanceof Project || parentValue instanceof ModuleGroup) {
                 result = NodeDecoration.Module;
             } else if (ProjectRootsUtil.isModuleContentRoot(directoryFile, project)

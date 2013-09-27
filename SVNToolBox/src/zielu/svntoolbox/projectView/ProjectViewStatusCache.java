@@ -3,17 +3,27 @@
  */
 package zielu.svntoolbox.projectView;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * <p></p>
+ * <p>Cache makes fallowing assumptions:
+ * <ul>
+ * <li>file data is added top-down i.e. first parent then children</li>
+ * </ul>
+ * </p>
  * <br/>
  * <p>Created on 24.09.13</p>
  *
@@ -22,99 +32,201 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ProjectViewStatusCache implements Disposable {
     private final Logger LOG = Logger.getInstance(getClass());
 
-    private final Map<String, ProjectViewStatus> branchesCache = new ConcurrentHashMap<String, ProjectViewStatus>();
-    private AtomicBoolean active = new AtomicBoolean(true);
+    //TODO: maybe use ConcurrentSkipListMap ?? if so remember that current size must be maintained externally
+    //see class docs for explanation 
+    private final Map<VirtualFile, ProjectViewStatus> myDirBranchesCache = new ConcurrentHashMap<VirtualFile, ProjectViewStatus>();
+    private final Map<VirtualFile, ProjectViewStatus> myFileBranchesCache = new ConcurrentHashMap<VirtualFile, ProjectViewStatus>();
+
+    private final AtomicBoolean myActive = new AtomicBoolean(true);
+
+    private final AtomicInteger SEQ;
+
+    public ProjectViewStatusCache(AtomicInteger seq) {
+        SEQ = seq;
+    }
+
+    private Map<VirtualFile, ProjectViewStatus> getCacheFor(VirtualFile vFile) {
+        if (vFile.isDirectory()) {
+            return myDirBranchesCache;
+        } else {
+            return myFileBranchesCache;
+        }
+    }
+
+    private String getCacheReport() {
+        return "dirCacheSize=" + myDirBranchesCache.size() + ", fileCacheSize=" + myFileBranchesCache.size();
+    }
 
     @Nullable
-    public ProjectViewStatus getBranch(VirtualFile file) {
-        if (active.get()) {
-            ProjectViewStatus status = branchesCache.get(file.getPath());
+    public ProjectViewStatus get(VirtualFile file) {
+        if (myActive.get()) {
+            ProjectViewStatus status = getCacheFor(file).get(file);
             if (status != null && LOG.isDebugEnabled()) {
-                LOG.debug("Found cached status for " + file + ", size=" + branchesCache.size() + ", existing=" + status);
+                LOG.debug("[" + SEQ.incrementAndGet() + "] Found cached status for " + file.getPath() + ", " + getCacheReport() + ", status=" + status);
             }
             return status;
         }
         return null;
     }
 
+    /**
+     * Add new file status. Final status may be different than once passes and should
+     * read from operation result.
+     *
+     * @param file      file to add
+     * @param candidate proposed status
+     * @return operation result or <code>null</code> when cache is disposed
+     */
     @Nullable
-    public ProjectViewStatus put(VirtualFile file, ProjectViewStatus branch) {
-        if (active.get()) {
-            ProjectViewStatus oldStatus = branchesCache.put(file.getPath(), branch);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Cached status for " + file + ", sizeAfter=" + branchesCache.size() + ", previous=" + oldStatus);
+    public PutResult add(VirtualFile file, ProjectViewStatus candidate) {
+        if (myActive.get()) {
+            if (!candidate.isEmpty() && isFirstNotEmptyParentStatusEqualTo(file, candidate)) {
+                //relevant status already cached for parent
+                //net result is that annotations are shown only for switched roots and not their children
+                candidate = ProjectViewStatus.EMPTY;
             }
-            return oldStatus;
+            ProjectViewStatus oldStatus = getCacheFor(file).put(file, candidate);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("[" + SEQ.incrementAndGet() + "] Cached candidate for " + file.getPath() +
+                        ", cacheAfter=[" + getCacheReport() + "], new=" + candidate + ", previous=" + oldStatus);
+            }
+            return new PutResult(candidate, oldStatus);
         }
         return null;
     }
 
-    public boolean evict(VirtualFile file) {
-        if (active.get()) {
-            ProjectViewStatus oldStatus = branchesCache.remove(file.getPath());
-            boolean result = oldStatus != null;
-            if (result && LOG.isDebugEnabled()) {
-                LOG.debug("Evicted status for " + file + ", sizeAfter=" + branchesCache.size() + ", evicted=" + oldStatus);
+    private boolean isFirstNotEmptyParentStatusEqualTo(VirtualFile vFile, ProjectViewStatus toCheck) {
+        for (VirtualFile current = vFile.getParent(); current != null; current = current.getParent()) {
+            //look only in dir cache as parents for dirs and files will always be dirs
+            ProjectViewStatus status = myDirBranchesCache.get(current);
+            if (status != null) {
+                if (!status.isEmpty() && status.equals(toCheck)) {
+                    return true;
+                }
             }
-            return result;
         }
         return false;
     }
 
-    public boolean evictAll(Iterable<VirtualFile> files) {
-        if (active.get()) {
+    private int evictChildren(VirtualFile parent) {
+        if (parent.isDirectory()) {
+            String parentPath = parent.getPath();
+            //evict files in all subdirectories
+            Set<VirtualFile> toEvict = Sets.newHashSetWithExpectedSize(myFileBranchesCache.size());
+            for (VirtualFile vFile : myFileBranchesCache.keySet()) {
+                if (vFile.getPath().startsWith(parentPath)) {
+                    toEvict.add(vFile);
+                }
+            }
+            int evictedCount = 0;
+            for (VirtualFile vFile : toEvict) {
+                if (evictFile(vFile)) {
+                    evictedCount++;
+                }
+            }
+            //evict all subdirectories
+            toEvict = Sets.newHashSetWithExpectedSize(myDirBranchesCache.size());
+            for (VirtualFile vDir : myDirBranchesCache.keySet()) {
+                if (vDir.getPath().startsWith(parentPath)) {
+                    toEvict.add(vDir);
+                }
+            }
+            for (VirtualFile vFile : toEvict) {
+                if (evictFile(vFile)) {
+                    evictedCount++;
+                }
+            }
+            return evictedCount;
+        }
+        return 0;
+    }
+
+    private boolean evictFile(VirtualFile vFile) {
+        Map<VirtualFile, ProjectViewStatus> cache = getCacheFor(vFile);
+        ProjectViewStatus oldStatus = cache.remove(vFile);
+        boolean result = oldStatus != null;
+        if (result && LOG.isDebugEnabled()) {
+            LOG.debug("[" + SEQ.incrementAndGet() + "] Evicted status for " + vFile.getPath() + ", sizeAfter=[" + getCacheReport() + "], evicted=" + oldStatus);
+        }
+        return result;
+    }
+
+    public boolean evict(VirtualFile file) {
+        if (myActive.get()) {
+            return evictFile(file);
+        }
+        return false;
+    }
+
+    public boolean evictAll(Collection<VirtualFile> files) {
+        if (myActive.get()) {
             boolean result = false;
             int evictedCount = 0;
+            List<VirtualFile> directories = Lists.newArrayListWithCapacity(files.size());
             for (VirtualFile file : files) {
-                ProjectViewStatus oldStatus = branchesCache.remove(file.getPath());
-                boolean localStatus = oldStatus != null;
+                boolean localStatus = evict(file);
                 if (localStatus) {
                     result = true;
                     evictedCount++;
                 }
-                if (localStatus && LOG.isDebugEnabled()) {
-                    LOG.debug("Evicted status for " + file + ", evicted=" + oldStatus);
+                if (file.isDirectory()) {
+                    directories.add(file);
+                }
+            }
+            for (VirtualFile dir : directories) {
+                int count = evictChildren(dir);
+                if (count > 0) {
+                    result = true;
+                    evictedCount += count;
                 }
             }
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Evicted " + evictedCount + " entries, sizeAfter=" + branchesCache.size());
+                LOG.debug("[" + SEQ.incrementAndGet() + "] Evicted bulk, totalCount=" + evictedCount + ", sizeAfter=[" + getCacheReport() + "]");
             }
             return result;
         }
         return false;
     }
 
-    public boolean evictNotSwitched(VirtualFile file) {
-        if (active.get()) {
-            ProjectViewStatus status = branchesCache.get(file.getPath());
-            if (status != null && status.hasSwitchedInfo()) {
-                if (!status.isSwitched()) {
-                    evict(file);
-                }
-            }
+    private void disposeCache(String name, Map<VirtualFile, ProjectViewStatus> cache) {
+        int size = cache.size();
+        cache.clear();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("[" + SEQ.incrementAndGet() + "] " + name + " cache disposed, had " + size + " entries");
         }
-        return false;
     }
 
-    public boolean evictSwitched(VirtualFile file) {
-        if (active.get()) {
-            ProjectViewStatus status = branchesCache.get(file.getPath());
-            if (status != null && status.hasSwitchedInfo()) {
-                if (status.isSwitched()) {
-                    evict(file);
-                }
-            }
-        }
-        return false;
+    public void clear() {
+        disposeCache("Dir", myDirBranchesCache);
+        disposeCache("File", myFileBranchesCache);
     }
 
     @Override
     public void dispose() {
-        active.set(false);
-        int size = branchesCache.size();
-        branchesCache.clear();
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Cache disposed, had " + size + " entries");
+        myActive.set(false);
+        clear();
+    }
+
+    public class PutResult {
+        private final ProjectViewStatus finalStatus;
+        private final ProjectViewStatus oldStatus;
+
+        public PutResult(ProjectViewStatus finalStatus, @Nullable ProjectViewStatus oldStatus) {
+            this.finalStatus = finalStatus;
+            this.oldStatus = oldStatus;
+        }
+
+        public ProjectViewStatus getFinalStatus() {
+            return finalStatus;
+        }
+
+        public boolean hasOldStatus() {
+            return oldStatus != null;
+        }
+
+        @Nullable
+        public ProjectViewStatus getOldStatus() {
+            return oldStatus;
         }
     }
 }

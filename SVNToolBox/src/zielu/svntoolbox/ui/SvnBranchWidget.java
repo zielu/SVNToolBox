@@ -13,6 +13,7 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.changes.committed.VcsConfigurationChangeListener;
 import com.intellij.openapi.vcs.changes.committed.VcsConfigurationChangeListener.Notification;
+import com.intellij.openapi.vcs.update.UpdatedFilesListener;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBarWidget;
@@ -26,9 +27,13 @@ import org.jetbrains.idea.svn.dialogs.BranchConfigurationDialog;
 import zielu.svntoolbox.FileStatus;
 import zielu.svntoolbox.FileStatusCalculator;
 import zielu.svntoolbox.util.LogStopwatch;
+import zielu.svntoolbox.util.Vfs;
 
 import java.awt.Component;
 import java.awt.event.MouseEvent;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -46,7 +51,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     private final static String EMPTY_BRANCH = "Not configured";
 
     private final FileStatusCalculator myStatusCalculator = new FileStatusCalculator();
-    private final MessageBusConnection myBranchesChangedConnection;
+    private final MessageBusConnection myConnection;
 
     private final static boolean READ_INFO_IN_OTHER_THREAD = false;
 
@@ -55,13 +60,31 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
 
     public SvnBranchWidget(@NotNull Project project) {
         super(project);
-        myBranchesChangedConnection = project.getMessageBus().connect(this);
-        myBranchesChangedConnection.subscribe(VcsConfigurationChangeListener.BRANCHES_CHANGED, getBranchesChangedNotification());
+        myConnection = project.getMessageBus().connect(this);
+        myConnection.subscribe(VcsConfigurationChangeListener.BRANCHES_CHANGED, getBranchesChangedNotification());
+        myConnection.subscribe(UpdatedFilesListener.UPDATED_FILES, new UpdatedFilesListener() {
+            @Override
+            public void consume(Set<String> paths) {
+                List<VirtualFile> vFiles = Vfs.pathsToFiles(paths);
+                final List<VirtualFile> underSvn = myStatusCalculator.filterUnderSvn(getProject(), vFiles);
+                if (!underSvn.isEmpty()) {
+                    ApplicationManager.getApplication().invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            VirtualFile currentFile = getCurrentFile();
+                            if (currentFile != null && isAffected(currentFile, underSvn)) {
+                                runUpdate();
+                            }
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @Override
     public void dispose() {
-        myBranchesChangedConnection.disconnect();
+        myConnection.disconnect();
         super.dispose();
     }
 
@@ -218,6 +241,17 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
         return VfsUtilCore.isAncestor(parent, child, true);
     }
 
+    private boolean isAffected(VirtualFile file, Collection<VirtualFile> files) {
+        for (VirtualFile vFile : files) {
+            if (vFile.isDirectory() && isChildOf(file, vFile)) {
+                return true;
+            } else if (file.equals(vFile)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void updateUi(final Optional<UpdateResult> maybeResult, final boolean maybeOpenBranchConfig) {
         if (maybeResult.isPresent()) {
             ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -251,6 +285,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
         }
     }
 
+    @Nullable
     private VirtualFile getCurrentFile() {
         if (READ_INFO_IN_OTHER_THREAD) {
             final AtomicReference<VirtualFile> selectedFile = new AtomicReference<VirtualFile>();

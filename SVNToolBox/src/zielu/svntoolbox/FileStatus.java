@@ -16,67 +16,67 @@ import org.tmatesoft.svn.core.SVNURL;
  * @author Lukasz Zielinski
  */
 public class FileStatus {
-    private final boolean underVcs;
-    private final SVNURL url;
-    private final Optional<SVNURL> branch; 
-    private final Optional<String> branchName;
-    private final Optional<String> branchDirectory;
-    
+    private final boolean myUnderVcs;
+    private final SVNURL myUrl;
+    private final Optional<SVNURL> myBranch;
+    private final Optional<String> myBranchName;
+    private final Optional<String> myBranchDirectory;
+
     public FileStatus() {
-        underVcs = false;
-        url = null;
-        branch = Optional.absent();
-        branchName = Optional.absent();
-        branchDirectory = Optional.absent();
+        myUnderVcs = false;
+        myUrl = null;
+        myBranch = Optional.absent();
+        myBranchName = Optional.absent();
+        myBranchDirectory = Optional.absent();
     }
-    
+
     public FileStatus(@NotNull SVNURL url) {
-        underVcs = true;
-        this.url = url;
-        branch = Optional.absent();
-        branchName = Optional.absent();
-        branchDirectory = Optional.absent();
-    }    
-    
+        myUnderVcs = true;
+        this.myUrl = url;
+        myBranch = Optional.absent();
+        myBranchName = Optional.absent();
+        myBranchDirectory = Optional.absent();
+    }
+
     public FileStatus(@NotNull SVNURL url, @Nullable SVNURL branch) {
-        underVcs = true;
-        this.url = url;
-        this.branch = Optional.fromNullable(branch);
+        myUnderVcs = true;
+        this.myUrl = url;
+        this.myBranch = Optional.fromNullable(branch);
         if (branch != null) {
             String[] parts = branch.toString().split("/");
             if (parts.length > 1) {
-                branchDirectory = Optional.of(parts[parts.length - 2]);                
+                myBranchDirectory = Optional.of(parts[parts.length - 2]);
             } else {
-                branchDirectory = Optional.absent();
+                myBranchDirectory = Optional.absent();
             }
-            if (parts.length > 0) {                
-                branchName = Optional.of(parts[parts.length-1]);                
+            if (parts.length > 0) {
+                myBranchName = Optional.of(parts[parts.length - 1]);
             } else {
-                branchName = Optional.absent();
-            }               
+                myBranchName = Optional.absent();
+            }
         } else {
-            branchName = Optional.absent();
-            branchDirectory = Optional.absent();                    
+            myBranchName = Optional.absent();
+            myBranchDirectory = Optional.absent();
         }
     }
-    
+
     public boolean isUnderVcs() {
-        return underVcs;        
+        return myUnderVcs;
     }
-    
+
     public SVNURL getURL() {
-        return url;        
+        return myUrl;
     }
 
     public Optional<SVNURL> getBranch() {
-        return branch;
+        return myBranch;
     }
 
     public Optional<String> getBranchName() {
-        return branchName;
+        return myBranchName;
     }
 
     public Optional<String> getBranchDirectory() {
-        return branchDirectory;
+        return myBranchDirectory;
     }
 }

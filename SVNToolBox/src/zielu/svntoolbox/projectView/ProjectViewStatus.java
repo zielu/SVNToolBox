@@ -13,45 +13,53 @@ import com.google.common.base.Objects;
  * @author Lukasz Zielinski
  */
 public class ProjectViewStatus {
-    private final String branchName;
-    private final Boolean switched;
+    public static final ProjectViewStatus EMPTY = new ProjectViewStatus();
 
-    public ProjectViewStatus(String branchName, boolean switched) {
-        this.branchName = branchName;
-        this.switched = switched;
-    }
+    private final String myBranchName;
 
     public ProjectViewStatus(String branchName) {
-        this.branchName = branchName;
-        switched = null;
+        this.myBranchName = branchName;
     }
 
-    public ProjectViewStatus() {
-        branchName = null;
-        switched = null;
+    private ProjectViewStatus() {
+        myBranchName = null;
     }
 
     public boolean isEmpty() {
-        return branchName == null && switched == null;
+        return myBranchName == null;
     }
 
     public String getBranchName() {
-        return branchName;
+        return myBranchName;
     }
 
-    public boolean hasSwitchedInfo() {
-        return switched != null;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ProjectViewStatus that = (ProjectViewStatus) o;
+
+        if (myBranchName != null ? !myBranchName.equals(that.myBranchName) : that.myBranchName != null) {
+            return false;
+        }
+
+        return true;
     }
 
-    public boolean isSwitched() {
-        return switched;
+    @Override
+    public int hashCode() {
+        return myBranchName != null ? myBranchName.hashCode() : 0;
     }
 
     @Override
     public String toString() {
         return Objects.toStringHelper(this)
-                .add("branchName", branchName)
-                .add("switched", switched)
+                .add("myBranchName", myBranchName)
                 .toString();
     }
 }
