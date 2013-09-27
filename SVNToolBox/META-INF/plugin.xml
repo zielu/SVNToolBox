@@ -53,7 +53,7 @@
 
   <project-components>
     <component>
-      <implementation-class>zielu.svntoolbox.SVNToolBox</implementation-class>
+      <implementation-class>zielu.svntoolbox.SvnToolBox</implementation-class>
     </component>
     <component>
       <implementation-class>zielu.svntoolbox.projectView.ProjectViewManager</implementation-class>  
@@ -65,9 +65,11 @@
     <!-- Add your actions here -->
       <group id="SvnToolBox.Menu" popup="true" text="Svn ToolBox">
       <action id="SvnToolBox.ToggleModuleProjectViewDecoration"
-              class="zielu.svntoolbox.ui.actions.ToggleSvnModuleDecorationAction" text="Show module branches in Project View" />
+              class="zielu.svntoolbox.ui.actions.ToggleSvnModuleDecorationAction"
+              text="Show module branches in Project View" />
       <action id="SvnToolBox.ToggleSwitchedProjectViewDecoration"
-              class="zielu.svntoolbox.ui.actions.ToggleSvnSwitchedDecorationAction" text="Show switched branches in Project View" />
+              class="zielu.svntoolbox.ui.actions.ToggleSvnSwitchedDecorationAction"
+              text="Show switched branches in Project View" />
       <add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="SubversionFilePopupGroup" />
     </group>
     <action id="SvnToolBox.ConfigureBranches" class="zielu.svntoolbox.ui.actions.ConfigureBranchesAction"
@@ -78,7 +80,10 @@
 
   <extensions defaultExtensionNs="com.intellij">
       <projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator" />
-      <projectService serviceImplementation="zielu.svntoolbox.SvnToolBoxState" />
+      <projectService serviceImplementation="zielu.svntoolbox.config.SvnToolBoxProjectState" />
+      
+      <applicationService serviceImplementation="zielu.svntoolbox.config.SvnToolBoxAppState" />
+      <applicationConfigurable instance="zielu.svntoolbox.ui.config.SvnToolBoxConfigurable" id="zielu.svntoolbox.app.config" />
       <!-- Add your extensions here -->
   </extensions>
 </idea-plugin>

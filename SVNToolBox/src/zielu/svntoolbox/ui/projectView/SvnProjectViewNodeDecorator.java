@@ -10,7 +10,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.packageDependencies.ui.PackageDependenciesNode;
 import com.intellij.ui.ColoredTreeCellRenderer;
-import zielu.svntoolbox.SvnToolBoxState;
+import zielu.svntoolbox.config.SvnToolBoxProjectState;
 import zielu.svntoolbox.projectView.ProjectViewManager;
 import zielu.svntoolbox.util.LogStopwatch;
 
@@ -29,7 +29,7 @@ public class SvnProjectViewNodeDecorator implements ProjectViewNodeDecorator {
         if (node != null) {
             Project project = node.getProject();
             if (project != null) {
-                SvnToolBoxState config = SvnToolBoxState.getInstance(project);
+                SvnToolBoxProjectState config = SvnToolBoxProjectState.getInstance(project);
                 if (config.showingAnyDecorations()) {
                     NodeDecoration type = NodeDecoration.fromNode(node);
                     if (LOG.isDebugEnabled()) {

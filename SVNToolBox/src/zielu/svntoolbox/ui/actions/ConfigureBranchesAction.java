@@ -11,6 +11,7 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.idea.svn.SvnBundle;
 import org.jetbrains.idea.svn.SvnVcs;
 import org.jetbrains.idea.svn.dialogs.BranchConfigurationDialog;
 
@@ -23,6 +24,9 @@ import org.jetbrains.idea.svn.dialogs.BranchConfigurationDialog;
  */
 public class ConfigureBranchesAction extends AnAction {
 
+    public ConfigureBranchesAction() {
+        super(SvnBundle.getString("action.Subversion.ConfigureBranches.text"));
+    }
 
     @Override
     public void update(AnActionEvent e) {

@@ -21,7 +21,7 @@ import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.ex.VirtualFileManagerEx;
 import com.intellij.util.messages.MessageBusConnection;
 import zielu.svntoolbox.FileStatusCalculator;
-import zielu.svntoolbox.SvnToolBoxState;
+import zielu.svntoolbox.config.SvnToolBoxProjectState;
 import zielu.svntoolbox.util.Vfs;
 
 import java.util.List;
@@ -59,7 +59,7 @@ public class ProjectViewManager extends AbstractProjectComponent {
     }
 
     private void refreshProjectView(final Project project) {
-        if (SvnToolBoxState.getInstance(project).showingAnyDecorations()) {
+        if (SvnToolBoxProjectState.getInstance(project).showingAnyDecorations()) {
             ApplicationManager.getApplication().invokeLater(new Runnable() {
                 @Override
                 public void run() {

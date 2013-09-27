@@ -6,7 +6,8 @@ package zielu.svntoolbox.ui.actions;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.ToggleAction;
 import com.intellij.openapi.project.Project;
-import zielu.svntoolbox.SvnToolBoxState;
+import zielu.svntoolbox.SvnToolBoxBundle;
+import zielu.svntoolbox.config.SvnToolBoxProjectState;
 import zielu.svntoolbox.projectView.DecorationToggleNotifier;
 
 /**
@@ -18,11 +19,15 @@ import zielu.svntoolbox.projectView.DecorationToggleNotifier;
  */
 public class ToggleSvnSwitchedDecorationAction extends ToggleAction {
 
+    public ToggleSvnSwitchedDecorationAction() {
+        super(SvnToolBoxBundle.getString("action.show.switched.decorations"));
+    }
+
     @Override
     public boolean isSelected(AnActionEvent e) {
         Project project = e.getProject();
         if (project != null) {
-            return SvnToolBoxState.getInstance(project).showProjectViewSwitchedDecoration;
+            return SvnToolBoxProjectState.getInstance(project).showProjectViewSwitchedDecoration;
         }
         return false;
     }
@@ -31,7 +36,7 @@ public class ToggleSvnSwitchedDecorationAction extends ToggleAction {
     public void setSelected(AnActionEvent e, boolean state) {
         Project project = e.getProject();
         if (project != null) {
-            SvnToolBoxState.getInstance(project).showProjectViewSwitchedDecoration = state;
+            SvnToolBoxProjectState.getInstance(project).showProjectViewSwitchedDecoration = state;
             project.getMessageBus().
                     syncPublisher(DecorationToggleNotifier.TOGGLE_TOPIC).decorationChanged(project);
         }

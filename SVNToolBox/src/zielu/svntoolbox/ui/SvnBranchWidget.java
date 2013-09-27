@@ -26,6 +26,7 @@ import org.jetbrains.idea.svn.SvnVcs;
 import org.jetbrains.idea.svn.dialogs.BranchConfigurationDialog;
 import zielu.svntoolbox.FileStatus;
 import zielu.svntoolbox.FileStatusCalculator;
+import zielu.svntoolbox.SvnToolBoxBundle;
 import zielu.svntoolbox.util.LogStopwatch;
 import zielu.svntoolbox.util.Vfs;
 
@@ -47,8 +48,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidget.Multiframe, StatusBarWidget.TextPresentation {
     private final Logger LOG = Logger.getInstance(getClass());
 
-    private final static String NA = "Svn: N/A";
-    private final static String EMPTY_BRANCH = "Not configured";
+    private final static String NA = SvnToolBoxBundle.getString("status.svn.na");
+    private final static String EMPTY_BRANCH = SvnToolBoxBundle.getString("status.svn.notConfigured");
 
     private final FileStatusCalculator myStatusCalculator = new FileStatusCalculator();
     private final MessageBusConnection myConnection;

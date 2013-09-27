@@ -19,20 +19,20 @@ import zielu.svntoolbox.ui.SvnBranchWidget;
  *
  * @author Lukasz Zielinski
  */
-public class SVNToolBox extends AbstractProjectComponent {
+public class SvnToolBox extends AbstractProjectComponent {
     private final Logger LOG = Logger.getInstance(getClass());
 
     private final Project myProject;
 
     private SvnBranchWidget myBranchWidget;
 
-    public SVNToolBox(@NotNull Project project) {
+    public SvnToolBox(@NotNull Project project) {
         super(project);
         this.myProject = project;
     }
 
-    public static SVNToolBox getInstance(@NotNull Project project) {
-        return project.getComponent(SVNToolBox.class);
+    public static SvnToolBox getInstance(@NotNull Project project) {
+        return project.getComponent(SvnToolBox.class);
     }
 
     @Override
