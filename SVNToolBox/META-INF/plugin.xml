@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/zielu/SVNToolBox">
   <id>zielu.svntoolbox</id>
   <name>SVNToolBox</name>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
   <depends>Subversion</depends>
   <description><![CDATA[
@@ -19,6 +19,7 @@
           <li>display branch for module</li>
           <li>display branch for switched files</li>
           <li>can be toggled in VCS -> Svn ToolBox</li>
+          <li>can be customized in Settings -> Svn ToolBox</li>
         </ul>
       </li>
       <li><b>Additional Subversion context menu actions:</b>
@@ -31,9 +32,11 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes is 1.0.1</h3>
+      <h3>Changes is 1.0.2</h3>
       <ul>
-        <li>Fixed Svn auth cache corruption</li>
+        <li>Configurable decoration colors</li>
+        <li>Introduced caching to speedup decorations rendering</li>
+        <li>Fixed switched files decorations</li>
       <ul>
       ]]>
   </change-notes>
@@ -48,7 +51,9 @@
     -->
 
     <application-components>
-    <!-- Add your application components here -->
+    <component>
+     <implementation-class>zielu.svntoolbox.config.SvnToolBoxAppState</implementation-class>
+    </component>
   </application-components>
 
   <project-components>
@@ -82,7 +87,6 @@
       <projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator" />
       <projectService serviceImplementation="zielu.svntoolbox.config.SvnToolBoxProjectState" />
       
-      <applicationService serviceImplementation="zielu.svntoolbox.config.SvnToolBoxAppState" />
       <applicationConfigurable instance="zielu.svntoolbox.ui.config.SvnToolBoxConfigurable" id="zielu.svntoolbox.app.config" />
       <!-- Add your extensions here -->
   </extensions>

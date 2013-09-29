@@ -22,13 +22,12 @@ import com.intellij.ui.SimpleTextAttributes;
 import org.jetbrains.annotations.Nullable;
 import zielu.svntoolbox.FileStatus;
 import zielu.svntoolbox.FileStatusCalculator;
+import zielu.svntoolbox.config.SvnToolBoxAppState;
 import zielu.svntoolbox.projectView.ProjectViewManager;
 import zielu.svntoolbox.projectView.ProjectViewStatus;
 import zielu.svntoolbox.projectView.ProjectViewStatusCache;
 import zielu.svntoolbox.projectView.ProjectViewStatusCache.PutResult;
 import zielu.svntoolbox.util.LogStopwatch;
-
-import java.awt.Color;
 
 /**
  * <p></p>
@@ -166,15 +165,20 @@ public enum NodeDecoration {
     protected final static Logger LOG = Logger.getInstance(NodeDecoration.class);
 
     protected final FileStatusCalculator myStatusCalc = new FileStatusCalculator();
-    protected final static Color BRANCH_COLOR = new JBColor(new Color(159, 107, 0), new Color(159, 107, 0));
-    protected final static SimpleTextAttributes BRANCH_ATTRIBUTES =
-            new SimpleTextAttributes(SimpleTextAttributes.STYLE_SMALLER, BRANCH_COLOR);
 
     protected abstract void decorate(ProjectViewNode node, PresentationData data);
 
     public abstract String getName(ProjectViewNode node);
 
     protected abstract VirtualFile getVirtualFile(ProjectViewNode node);
+
+    protected JBColor getBranchColor() {
+        return SvnToolBoxAppState.getInstance().getProjectViewDecorationColor();
+    }
+
+    protected SimpleTextAttributes getBranchAttributes() {
+        return new SimpleTextAttributes(SimpleTextAttributes.STYLE_SMALLER, getBranchColor());
+    }
 
     protected Object getParentValue(ProjectViewNode node) {
         return node.getParent() != null ? node.getParent().getValue() : null;
@@ -221,7 +225,7 @@ public enum NodeDecoration {
     }
 
     protected ColoredFragment formatBranchName(String branchName) {
-        return new ColoredFragment(" [Svn: " + branchName + "]", BRANCH_ATTRIBUTES);
+        return new ColoredFragment(" [Svn: " + branchName + "]", getBranchAttributes());
     }
 
     protected boolean isUnderSvn(ProjectViewNode node, ProjectViewManager manager) {

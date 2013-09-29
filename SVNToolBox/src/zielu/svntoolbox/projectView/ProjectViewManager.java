@@ -92,6 +92,12 @@ public class ProjectViewManager extends AbstractProjectComponent {
                 refreshProjectView(project);
             }
         });
+        myConnection.subscribe(DecorationSettingsNotifier.TOGGLE_TOPIC, new DecorationSettingsNotifier() {
+            @Override
+            public void settingsChanged() {
+                refreshProjectView(myProject);
+            }
+        });
         myConnection.subscribe(UpdatedFilesListener.UPDATED_FILES, new UpdatedFilesListener() {
             final FileStatusCalculator myStatusCalc = new FileStatusCalculator();
 

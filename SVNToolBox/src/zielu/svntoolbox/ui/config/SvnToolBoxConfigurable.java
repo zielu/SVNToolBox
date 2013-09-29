@@ -8,9 +8,9 @@ import com.intellij.openapi.options.ConfigurationException;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 import zielu.svntoolbox.SvnToolBoxBundle;
+import zielu.svntoolbox.config.SvnToolBoxAppState;
 
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 
 /**
  * <p></p>
@@ -20,6 +20,8 @@ import javax.swing.JPanel;
  * @author Lukasz Zielinski
  */
 public class SvnToolBoxConfigurable extends BaseConfigurable {
+    private SvnToolBoxForm form;
+
     @Nls
     @Override
     public String getDisplayName() {
@@ -32,25 +34,66 @@ public class SvnToolBoxConfigurable extends BaseConfigurable {
         return null;  //TODO: auto-generated method implementation
     }
 
+    private void initComponent() {
+        if (form == null) {
+            form = new SvnToolBoxForm();
+        }
+    }
+
     @Nullable
     @Override
     public JComponent createComponent() {
-        return new JPanel();
+        initComponent();
+        SvnToolBoxAppState state = SvnToolBoxAppState.getInstance();
+        form.setRegularColorState(state.customRegularColor, state.getRegularDecorationColor());
+        form.setDarkColorState(state.customDarkColor, state.getDarkDecorationColor());
+        return form.getContent();
     }
 
     @Override
     public void apply() throws ConfigurationException {
-        //TODO: auto-generated method implementation
+        initComponent();
+        SvnToolBoxAppState state = SvnToolBoxAppState.getInstance();
+
+        boolean changed = false;
+        if (state.checkRegularDecorationChanged(form.isRegularColorEnabled(), form.getRegularColor())) {
+            state.setRegularDecorationColor(form.isRegularColorEnabled(), form.getRegularColor());
+            changed = true;
+        }
+        if (state.checkDarkDecorationChanged(form.isDarkColorEnabled(), form.getDarkColor())) {
+            state.setDarkDecorationColor(form.isDarkColorEnabled(), form.getDarkColor());
+            changed = true;
+        }
+
+        if (changed) {
+            state.fireSettingsChanged();
+        }
+    }
+
+    @Override
+    public boolean isModified() {
+        boolean modified = false;
+        SvnToolBoxAppState state = SvnToolBoxAppState.getInstance();
+        if (state.checkRegularDecorationChanged(form.isRegularColorEnabled(), form.getRegularColor())) {
+            modified = true;
+        }
+        if (state.checkDarkDecorationChanged(form.isDarkColorEnabled(), form.getDarkColor())) {
+            modified = true;
+        }
+        return modified;
     }
 
     @Override
     public void reset() {
-        //TODO: auto-generated method implementation
+        initComponent();
+        SvnToolBoxAppState state = SvnToolBoxAppState.getInstance();
+        form.setRegularColorState(state.customRegularColor, state.getRegularDecorationColor());
+        form.setDarkColorState(state.customDarkColor, state.getDarkDecorationColor());
     }
 
     @Override
     public void disposeUIResources() {
-        //TODO: auto-generated method implementation
+        form = null;
     }
 
 }
