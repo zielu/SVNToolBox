@@ -264,7 +264,7 @@ public enum NodeDecoration {
             if (parentValue instanceof Project || parentValue instanceof ModuleGroup) {
                 result = NodeDecoration.Module;
             } else if (ProjectRootsUtil.isModuleContentRoot(directoryFile, project)
-                    || ProjectRootsUtil.isSourceOrTestRoot(directoryFile, project)) {
+                    || ProjectRootsUtil.isSourceRoot(directoryFile, project)) {
                 result = NodeDecoration.ContentRoot;
             } else if (ProjectRootsUtil.isInSource(directoryFile, project) ||
                     ProjectRootsUtil.isInTestSource(directoryFile, project)) {
