@@ -1,0 +1,5 @@
+<idea-plugin url="http://www.jetbrains.com/idea">
+  <extensions defaultExtensionNs="com.intellij">
+    <svntoolbox.nodeDecorationPoint priority="4" implementationClass="zielu.svntoolbox.ui.projectView.impl.ClassFileDecoration"/>
+  </extensions>
+</idea-plugin> 

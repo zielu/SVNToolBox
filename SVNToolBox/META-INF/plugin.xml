@@ -3,7 +3,11 @@
   <name>SVNToolBox</name>
   <version>1.0.2</version>
   <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
+  
+  <depends>com.intellij.modules.platform</depends>
   <depends>Subversion</depends>
+  <depends optional="true" config-file="java-features.xml">com.intellij.modules.java</depends>
+  
   <description><![CDATA[
     <h2>Enriches SVN integration</h2>
     Following functionality was added:
@@ -32,11 +36,10 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes is 1.0.2</h3>
+      <h3>Changes is 12.0.3</h3>
       <ul>
-        <li>Configurable decoration colors</li>
-        <li>Introduced caching to speedup decorations rendering</li>
-        <li>Fixed switched files decorations</li>
+        <li>Fixed compatibility with other products based on IntelliJ platform</li>
+        <li>Changed revision scheme to follow Idea versions</li>
       <ul>
       ]]>
   </change-notes>
@@ -83,11 +86,21 @@
     </action>
   </actions>
 
+  <extensionPoints>
+    <extensionPoint name="svntoolbox.nodeDecorationPoint" beanClass="zielu.svntoolbox.extensions.NodeDecorationEP">
+      <with attribute="implementationClass" implements="zielu.svntoolbox.ui.projectView.NodeDecoration"/>
+    </extensionPoint>
+  </extensionPoints>
+  
   <extensions defaultExtensionNs="com.intellij">
       <projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator" />
       <projectService serviceImplementation="zielu.svntoolbox.config.SvnToolBoxProjectState" />
       
       <applicationConfigurable instance="zielu.svntoolbox.ui.config.SvnToolBoxConfigurable" id="zielu.svntoolbox.app.config" />
       <!-- Add your extensions here -->
+      <svntoolbox.nodeDecorationPoint priority="1" implementationClass="zielu.svntoolbox.ui.projectView.impl.ModuleDecoration"/>
+      <svntoolbox.nodeDecorationPoint priority="2" implementationClass="zielu.svntoolbox.ui.projectView.impl.ContentRootDecoration"/>
+      <svntoolbox.nodeDecorationPoint priority="3" implementationClass="zielu.svntoolbox.ui.projectView.impl.PackageDecoration"/>
+      <svntoolbox.nodeDecorationPoint priority="10" implementationClass="zielu.svntoolbox.ui.projectView.impl.FileDecoration"/>
   </extensions>
 </idea-plugin>
