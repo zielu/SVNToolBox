@@ -87,20 +87,22 @@
   </actions>
 
   <extensionPoints>
-    <extensionPoint name="svntoolbox.nodeDecorationPoint" beanClass="zielu.svntoolbox.extensions.NodeDecorationEP">
+    <extensionPoint name="nodeDecorationPoint" beanClass="zielu.svntoolbox.extensions.NodeDecorationEP">
       <with attribute="implementationClass" implements="zielu.svntoolbox.ui.projectView.NodeDecoration"/>
     </extensionPoint>
   </extensionPoints>
   
   <extensions defaultExtensionNs="com.intellij">
-      <projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator" />
-      <projectService serviceImplementation="zielu.svntoolbox.config.SvnToolBoxProjectState" />
+    <projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator" />
+    <projectService serviceImplementation="zielu.svntoolbox.config.SvnToolBoxProjectState" />
       
-      <applicationConfigurable instance="zielu.svntoolbox.ui.config.SvnToolBoxConfigurable" id="zielu.svntoolbox.app.config" />
-      <!-- Add your extensions here -->
-      <svntoolbox.nodeDecorationPoint priority="1" implementationClass="zielu.svntoolbox.ui.projectView.impl.ModuleDecoration"/>
-      <svntoolbox.nodeDecorationPoint priority="2" implementationClass="zielu.svntoolbox.ui.projectView.impl.ContentRootDecoration"/>
-      <svntoolbox.nodeDecorationPoint priority="3" implementationClass="zielu.svntoolbox.ui.projectView.impl.PackageDecoration"/>
-      <svntoolbox.nodeDecorationPoint priority="10" implementationClass="zielu.svntoolbox.ui.projectView.impl.FileDecoration"/>
+    <applicationConfigurable instance="zielu.svntoolbox.ui.config.SvnToolBoxConfigurable" id="zielu.svntoolbox.app.config" />
+    <!-- Add your extensions here -->
+  </extensions>
+  <extensions defaultExtensionNs="zielu.svntoolbox">
+    <nodeDecorationPoint priority="1" implementationClass="zielu.svntoolbox.ui.projectView.impl.ModuleDecoration"/>
+    <nodeDecorationPoint priority="2" implementationClass="zielu.svntoolbox.ui.projectView.impl.ContentRootDecoration"/>
+    <nodeDecorationPoint priority="3" implementationClass="zielu.svntoolbox.ui.projectView.impl.PackageDecoration"/>
+    <nodeDecorationPoint priority="10" implementationClass="zielu.svntoolbox.ui.projectView.impl.FileDecoration"/>
   </extensions>
 </idea-plugin>

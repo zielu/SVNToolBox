@@ -18,7 +18,7 @@ import zielu.svntoolbox.ui.projectView.NodeDecoration;
  */
 public class NodeDecorationEP extends AbstractExtensionPointBean implements Comparable<NodeDecorationEP> {
     public final static ExtensionPointName<NodeDecorationEP> 
-            POINT_NAME = ExtensionPointName.create("svntoolbox.nodeDecorationPoint");
+            POINT_NAME = ExtensionPointName.create("zielu.svntoolbox.nodeDecorationPoint");
     
     @Attribute("priority")
     public Integer priority;
