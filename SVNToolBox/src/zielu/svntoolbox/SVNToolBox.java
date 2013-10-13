@@ -50,7 +50,11 @@ public class SvnToolBox extends AbstractProjectComponent {
         List<NodeDecorationEP> nodeDecorationEPs = Arrays.asList(Extensions.getExtensions(NodeDecorationEP.POINT_NAME));
         Collections.sort(nodeDecorationEPs);
         for (NodeDecorationEP decorationEP : nodeDecorationEPs) {
-            nodeDecorations.add(decorationEP.instantiate());    
+            NodeDecoration decoration = decorationEP.instantiate();
+            nodeDecorations.add(decoration);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Added decoration "+decorationEP.priority+" "+decoration);
+            }
         }
     }
 
