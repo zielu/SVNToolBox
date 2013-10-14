@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/zielu/SVNToolBox">
   <id>zielu.svntoolbox</id>
   <name>SVNToolBox</name>
-  <version>1.0.2</version>
+  <version>12.0.0</version>
   <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
   
   <depends>com.intellij.modules.platform</depends>
@@ -36,7 +36,7 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes is 12.0.0</h3>
+      <h3>Changes in 12.0.0</h3>
       <ul>
         <li>Fixed compatibility with other products based on IntelliJ platform</li>
         <li>Changed revision scheme to follow Idea versions</li>
@@ -44,14 +44,14 @@
       ]]>
   </change-notes>
 
-    <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="129.298" until-build="129.9999" />
+  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="129.298" until-build="129.9999" />
 
-    <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
-         on how to target different products -->
-    <!-- uncomment to enable plugin in all products
-    <depends>com.intellij.modules.lang</depends>
-    -->
+  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
 
   <application-components>
     <component>
@@ -69,12 +69,12 @@
     <component>
       <implementation-class>zielu.svntoolbox.projectView.ProjectViewManager</implementation-class>  
     </component>
-      <!-- Add your project components here -->
+    <!-- Add your project components here -->
   </project-components>
 
   <actions>
     <!-- Add your actions here -->
-      <group id="SvnToolBox.Menu" popup="true" text="Svn ToolBox">
+    <group id="SvnToolBox.Menu" popup="true" text="Svn ToolBox">
       <action id="SvnToolBox.ToggleModuleProjectViewDecoration"
               class="zielu.svntoolbox.ui.actions.ToggleSvnModuleDecorationAction"
               text="Show module branches in Project View" />
@@ -91,7 +91,7 @@
 
   <extensionPoints>
     <extensionPoint name="nodeDecorationPoint" beanClass="zielu.svntoolbox.extensions.NodeDecorationEP">
-      <with attribute="implementationClass" implements="zielu.svntoolbox.ui.projectView.NodeDecoration"/>
+      <with attribute="implementationClass" implements="zielu.svntoolbox.ui.projectView.NodeDecoration" />
     </extensionPoint>
   </extensionPoints>
   
@@ -103,9 +103,9 @@
     <!-- Add your extensions here -->
   </extensions>
   <extensions defaultExtensionNs="zielu.svntoolbox">
-    <nodeDecorationPoint priority="1" implementationClass="zielu.svntoolbox.ui.projectView.impl.ModuleDecoration"/>
-    <nodeDecorationPoint priority="2" implementationClass="zielu.svntoolbox.ui.projectView.impl.ContentRootDecoration"/>
-    <nodeDecorationPoint priority="3" implementationClass="zielu.svntoolbox.ui.projectView.impl.PackageDecoration"/>
-    <nodeDecorationPoint priority="10" implementationClass="zielu.svntoolbox.ui.projectView.impl.FileDecoration"/>
+    <nodeDecorationPoint priority="1" implementationClass="zielu.svntoolbox.ui.projectView.impl.ModuleDecoration" />
+    <nodeDecorationPoint priority="2" implementationClass="zielu.svntoolbox.ui.projectView.impl.ContentRootDecoration" />
+    <nodeDecorationPoint priority="3" implementationClass="zielu.svntoolbox.ui.projectView.impl.PackageDecoration" />
+    <nodeDecorationPoint priority="10" implementationClass="zielu.svntoolbox.ui.projectView.impl.FileDecoration" />
   </extensions>
 </idea-plugin>
