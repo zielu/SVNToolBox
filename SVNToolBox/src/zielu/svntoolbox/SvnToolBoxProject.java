@@ -3,22 +3,14 @@
  */
 package zielu.svntoolbox;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import com.google.common.collect.Lists;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import org.jetbrains.annotations.NotNull;
-import zielu.svntoolbox.extensions.NodeDecorationEP;
 import zielu.svntoolbox.ui.SvnBranchWidget;
-import zielu.svntoolbox.ui.projectView.NodeDecoration;
 
 /**
  * <p></p>
@@ -27,40 +19,23 @@ import zielu.svntoolbox.ui.projectView.NodeDecoration;
  *
  * @author Lukasz Zielinski
  */
-public class SvnToolBox extends AbstractProjectComponent {
+public class SvnToolBoxProject extends AbstractProjectComponent {
     private final Logger LOG = Logger.getInstance(getClass());
 
     private final Project myProject;
 
     private SvnBranchWidget myBranchWidget;
 
-    private final List<NodeDecoration> nodeDecorations = Lists.newArrayList();
     
-    public SvnToolBox(@NotNull Project project) {
+    
+    public SvnToolBoxProject(@NotNull Project project) {
         super(project);
         this.myProject = project;
     }
 
-    public static SvnToolBox getInstance(@NotNull Project project) {
-        return project.getComponent(SvnToolBox.class);
-    }
-
-    @Override
-    public void initComponent() {
-        List<NodeDecorationEP> nodeDecorationEPs = Arrays.asList(Extensions.getExtensions(NodeDecorationEP.POINT_NAME));
-        Collections.sort(nodeDecorationEPs);
-        for (NodeDecorationEP decorationEP : nodeDecorationEPs) {
-            NodeDecoration decoration = decorationEP.instantiate();
-            nodeDecorations.add(decoration);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Added decoration "+decorationEP.priority+" "+decoration);
-            }
-        }
-    }
-
-    public Iterable<NodeDecoration> getNodeDecorations() {
-        return nodeDecorations;    
-    }
+    public static SvnToolBoxProject getInstance(@NotNull Project project) {
+        return project.getComponent(SvnToolBoxProject.class);
+    }    
     
     @Override
     public void projectOpened() {

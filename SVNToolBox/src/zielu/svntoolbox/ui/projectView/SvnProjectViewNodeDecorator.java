@@ -10,10 +10,9 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.packageDependencies.ui.PackageDependenciesNode;
 import com.intellij.ui.ColoredTreeCellRenderer;
-import zielu.svntoolbox.SvnToolBox;
+import zielu.svntoolbox.SvnToolBoxApp;
 import zielu.svntoolbox.config.SvnToolBoxProjectState;
 import zielu.svntoolbox.projectView.ProjectViewManager;
-import zielu.svntoolbox.ui.projectView.impl.EmptyDecoration;
 import zielu.svntoolbox.util.LogStopwatch;
 
 /**
@@ -33,13 +32,8 @@ public class SvnProjectViewNodeDecorator implements ProjectViewNodeDecorator {
             if (project != null) {
                 SvnToolBoxProjectState config = SvnToolBoxProjectState.getInstance(project);
                 if (config.showingAnyDecorations()) {
-                    SvnToolBox svnToolBox = SvnToolBox.getInstance(project);
-                    NodeDecoration decoration = EmptyDecoration.INSTANCE;
-                    for (NodeDecoration candidate : svnToolBox.getNodeDecorations()) {
-                        if (candidate.isForMe(node)) {
-                            decoration = candidate;
-                        }
-                    }
+                    SvnToolBoxApp svnToolBox = SvnToolBoxApp.getInstance();
+                    NodeDecoration decoration = svnToolBox.decorationFor(node);                    
                                       
                     if (LOG.isDebugEnabled()) {
                         final int seq = ProjectViewManager.getInstance(project).PV_SEQ.incrementAndGet();
