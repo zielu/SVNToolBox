@@ -4,6 +4,7 @@
 package zielu.svntoolbox.projectView;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 
 /**
  * <p></p>
@@ -18,7 +19,7 @@ public class ProjectViewStatus {
     private final String myBranchName;
 
     public ProjectViewStatus(String branchName) {
-        this.myBranchName = branchName;
+        this.myBranchName = Preconditions.checkNotNull(branchName, "Null branch name");
     }
 
     private ProjectViewStatus() {
