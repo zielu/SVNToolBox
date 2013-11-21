@@ -3,13 +3,6 @@
  */
 package zielu.svntoolbox.projectView;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.intellij.openapi.Disposable;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +10,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.intellij.openapi.Disposable;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * <p>Cache makes fallowing assumptions:
@@ -100,8 +100,8 @@ public class ProjectViewStatusCache implements Disposable {
             //look only in dir cache as parents for dirs and files will always be dirs
             ProjectViewStatus status = myDirBranchesCache.get(current);
             if (status != null) {
-                if (!status.isEmpty() && status.equals(toCheck)) {
-                    return true;
+                if (!status.isEmpty()) {
+                    return status.equals(toCheck);
                 }
             }
         }
