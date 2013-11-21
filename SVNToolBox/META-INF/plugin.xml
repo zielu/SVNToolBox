@@ -38,20 +38,19 @@
   <change-notes><![CDATA[
       <h3>Changes is 13.0.0</h3>
       <ul>
-        <li>Fixed compatibility with Idea 13 EAP</li>
-        <li>Changed version scheme</li>
+        <li>Fixed compatibility with Idea 13</li>
       <ul>
       ]]>
   </change-notes>
 
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="132.556" until-build="132.9999" />
+  <idea-version since-build="132.556" until-build="133.9999" />
 
-    <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
-         on how to target different products -->
-    <!-- uncomment to enable plugin in all products
-    <depends>com.intellij.modules.lang</depends>
-    -->
+  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
 
   <application-components>
     <component>

@@ -47,7 +47,7 @@ public class ContentRootDecoration extends AbstractNodeDecoration {
             final PsiDirectory psiDirectory = dirNode.getValue();
             final VirtualFile directoryFile = psiDirectory.getVirtualFile();
             return (ProjectRootsUtil.isModuleContentRoot(directoryFile, project)
-                    || ProjectRootsUtil.isSourceOrTestRoot(directoryFile, project));
+                    || ProjectRootsUtil.isInSource(directoryFile, project));
         }
         return false;
     }
