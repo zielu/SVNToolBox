@@ -3,7 +3,11 @@
   <name>SVNToolBox</name>
   <version>13.0.0</version>
   <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
+  
+  <depends>com.intellij.modules.platform</depends>
   <depends>Subversion</depends>
+  <depends optional="true" config-file="java-features.xml">com.intellij.modules.java</depends>
+  
   <description><![CDATA[
     <h2>Enriches SVN integration</h2>
     Following functionality was added:
@@ -43,13 +47,16 @@
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
   <idea-version since-build="132.556" until-build="132.9999" />
 
-  <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
-       on how to target different products -->
-  <!-- uncomment to enable plugin in all products
-  <depends>com.intellij.modules.lang</depends>
-  -->
+    <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
 
   <application-components>
+    <component>
+      <implementation-class>zielu.svntoolbox.SvnToolBoxApp</implementation-class>
+    </component>
     <component>
      <implementation-class>zielu.svntoolbox.config.SvnToolBoxAppState</implementation-class>
     </component>
@@ -57,7 +64,7 @@
 
   <project-components>
     <component>
-      <implementation-class>zielu.svntoolbox.SvnToolBox</implementation-class>
+      <implementation-class>zielu.svntoolbox.SvnToolBoxProject</implementation-class>
     </component>
     <component>
       <implementation-class>zielu.svntoolbox.projectView.ProjectViewManager</implementation-class>  
@@ -82,11 +89,23 @@
     </action>
   </actions>
 
+  <extensionPoints>
+    <extensionPoint name="nodeDecorationPoint" beanClass="zielu.svntoolbox.extensions.NodeDecorationEP">
+      <with attribute="implementationClass" implements="zielu.svntoolbox.ui.projectView.NodeDecoration" />
+    </extensionPoint>
+  </extensionPoints>
+  
   <extensions defaultExtensionNs="com.intellij">
-      <projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator" />
-      <projectService serviceImplementation="zielu.svntoolbox.config.SvnToolBoxProjectState" />
+    <projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator" />
+    <projectService serviceImplementation="zielu.svntoolbox.config.SvnToolBoxProjectState" />
       
-      <applicationConfigurable instance="zielu.svntoolbox.ui.config.SvnToolBoxConfigurable" id="zielu.svntoolbox.app.config" />
+    <applicationConfigurable instance="zielu.svntoolbox.ui.config.SvnToolBoxConfigurable" id="zielu.svntoolbox.app.config" />
     <!-- Add your extensions here -->
+  </extensions>
+  <extensions defaultExtensionNs="zielu.svntoolbox">
+    <nodeDecorationPoint priority="1" implementationClass="zielu.svntoolbox.ui.projectView.impl.ModuleDecoration" />
+    <nodeDecorationPoint priority="2" implementationClass="zielu.svntoolbox.ui.projectView.impl.ContentRootDecoration" />
+    <nodeDecorationPoint priority="3" implementationClass="zielu.svntoolbox.ui.projectView.impl.PackageDecoration" />
+    <nodeDecorationPoint priority="10" implementationClass="zielu.svntoolbox.ui.projectView.impl.FileDecoration" />
   </extensions>
 </idea-plugin>

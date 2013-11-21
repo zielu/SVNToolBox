@@ -10,6 +10,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.packageDependencies.ui.PackageDependenciesNode;
 import com.intellij.ui.ColoredTreeCellRenderer;
+import zielu.svntoolbox.SvnToolBoxApp;
 import zielu.svntoolbox.config.SvnToolBoxProjectState;
 import zielu.svntoolbox.projectView.ProjectViewManager;
 import zielu.svntoolbox.util.LogStopwatch;
@@ -31,18 +32,21 @@ public class SvnProjectViewNodeDecorator implements ProjectViewNodeDecorator {
             if (project != null) {
                 SvnToolBoxProjectState config = SvnToolBoxProjectState.getInstance(project);
                 if (config.showingAnyDecorations()) {
-                    NodeDecoration type = NodeDecoration.fromNode(node);
+                    SvnToolBoxApp svnToolBox = SvnToolBoxApp.getInstance();
+                    NodeDecoration decoration = svnToolBox.decorationFor(node);                    
+                                      
                     if (LOG.isDebugEnabled()) {
                         final int seq = ProjectViewManager.getInstance(project).PV_SEQ.incrementAndGet();
-                        LOG.debug("[" + seq + "] Node: " + type + " " + node + " " + node.getClass().getName());
+                        LOG.debug("[" + seq + "] Node: " + decoration.getClass().getName() 
+                                + " " + node + " " + node.getClass().getName());
                     }
-                    if (type == NodeDecoration.Module) {
+                    if (decoration.getType() == NodeDecorationType.Module) {
                         if (config.showProjectViewModuleDecoration) {
-                            type.apply(node, data);
+                            decoration.decorate(node, data);
                         }
                     } else if (config.showProjectViewSwitchedDecoration) {
                         LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "Switched decoration").start();
-                        type.apply(node, data);
+                        decoration.decorate(node, data);
                         watch.stop();
                     }
                 }
