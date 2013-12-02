@@ -3,6 +3,10 @@
  */
 package zielu.svntoolbox;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
+
 import com.google.common.collect.Lists;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
@@ -14,10 +18,6 @@ import org.jetbrains.idea.svn.SvnUtil;
 import org.jetbrains.idea.svn.SvnVcs;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNInfo;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * <p></p>
@@ -78,9 +78,14 @@ public class FileStatusCalculator {
             if (fileUrl != null) {
                 SVNInfo info = svn.getInfo(vFile);
                 if (info != null) {
-                    VirtualFile rootVf = SvnUtil.getVirtualFile(info.getWorkingCopyRoot().getPath());
-                    SVNURL branch = SvnUtil.getBranchForUrl(svn, rootVf, fileUrl.toString());
-                    return new FileStatus(fileUrl, branch);
+                    File wcRoot = info.getWorkingCopyRoot();
+                    if (wcRoot != null) {
+                        VirtualFile rootVf = SvnUtil.getVirtualFile(wcRoot.getPath());
+                        SVNURL branch = SvnUtil.getBranchForUrl(svn, rootVf, fileUrl.toString());
+                        return new FileStatus(fileUrl, branch);
+                    } else {
+                        return new FileStatus(fileUrl);
+                    }
                 } else {
                     return new FileStatus(fileUrl);
                 }
