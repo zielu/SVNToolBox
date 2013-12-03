@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/zielu/SVNToolBox">
   <id>zielu.svntoolbox</id>
   <name>SVNToolBox</name>
-  <version>13.0.0</version>
+  <version>13.0.1</version>
   <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
   
   <depends>com.intellij.modules.platform</depends>
@@ -29,6 +29,7 @@
       <li><b>Additional Subversion context menu actions:</b>
         <ul>
           <li>'Configure branches' extracted from 'Update' dialog as item</li>
+          <li>'Copy URL' to clipboard action</li>
         </ul>
       </li>
     </ul>
@@ -36,9 +37,10 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes is 13.0.0</h3>
+      <h3>Changes is 13.0.1</h3>
       <ul>
-        <li>Fixed compatibility with Idea 13</li>
+        <li>Added command line client support (<a href="https://github.com/zielu/SVNToolBox/issues/2">issue 2</b>)</li>
+        <li>Added 'Copy URL' action</li>
       <ul>
       ]]>
   </change-notes>
@@ -84,6 +86,10 @@
     </group>
     <action id="SvnToolBox.ConfigureBranches" class="zielu.svntoolbox.ui.actions.ConfigureBranchesAction"
             text="Configure branches...">
+      <add-to-group group-id="SubversionFilePopupGroup" anchor="last" />
+    </action>
+    <action id="SvnToolBox.CopyURL" class="zielu.svntoolbox.ui.actions.CopyFileUrlAction"
+            text="Copy URL">
       <add-to-group group-id="SubversionFilePopupGroup" anchor="last" />
     </action>
   </actions>
