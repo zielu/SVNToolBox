@@ -3,6 +3,14 @@
  */
 package zielu.svntoolbox.ui;
 
+import java.awt.Component;
+import java.awt.event.MouseEvent;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.intellij.openapi.application.ApplicationManager;
@@ -29,14 +37,6 @@ import zielu.svntoolbox.FileStatusCalculator;
 import zielu.svntoolbox.SvnToolBoxBundle;
 import zielu.svntoolbox.util.LogStopwatch;
 import zielu.svntoolbox.util.Vfs;
-
-import java.awt.Component;
-import java.awt.event.MouseEvent;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * <p></p>
@@ -174,12 +174,8 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
 
     private String prepareBranchText(FileStatus status) {
         StringBuilder text = new StringBuilder("Svn: ");
-        if (status.getBranch().isPresent()) {
-            if (status.getBranchName().isPresent()) {
-                text.append(status.getBranchName().get());
-            } else {
-                text.append(EMPTY_BRANCH);
-            }
+        if (status.getBranchName().isPresent()) {
+            text.append(status.getBranchName().get());
         } else {
             text.append(EMPTY_BRANCH);
         }
@@ -276,7 +272,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
                         }
                         watch.stop();
                         if (maybeOpenBranchConfig && maybeResult.isPresent()) {
-                            if (result.canConfigureBranches() && !result.status.getBranch().isPresent()) {
+                            if (result.canConfigureBranches() && !result.status.getBranchName().isPresent()) {
                                 BranchConfigurationDialog.configureBranches(result.project, result.file);
                             }
                         }

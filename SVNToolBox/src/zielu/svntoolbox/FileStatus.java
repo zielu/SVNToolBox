@@ -18,30 +18,33 @@ import org.tmatesoft.svn.core.SVNURL;
 public class FileStatus {
     private final boolean myUnderVcs;
     private final SVNURL myUrl;
-    private final Optional<SVNURL> myBranch;
     private final Optional<String> myBranchName;
     private final Optional<String> myBranchDirectory;
 
     public FileStatus() {
         myUnderVcs = false;
         myUrl = null;
-        myBranch = Optional.absent();
         myBranchName = Optional.absent();
         myBranchDirectory = Optional.absent();
     }
 
     public FileStatus(@NotNull SVNURL url) {
         myUnderVcs = true;
-        this.myUrl = url;
-        myBranch = Optional.absent();
+        myUrl = url;
         myBranchName = Optional.absent();
+        myBranchDirectory = Optional.absent();
+    }
+
+    public FileStatus(@NotNull SVNURL url, @Nullable String branchName) {
+        myUnderVcs = true;
+        myUrl = url;
+        myBranchName = Optional.fromNullable(branchName);
         myBranchDirectory = Optional.absent();
     }
 
     public FileStatus(@NotNull SVNURL url, @Nullable SVNURL branch) {
         myUnderVcs = true;
-        this.myUrl = url;
-        this.myBranch = Optional.fromNullable(branch);
+        myUrl = url;
         if (branch != null) {
             String[] parts = branch.toString().split("/");
             if (parts.length > 1) {
@@ -66,10 +69,6 @@ public class FileStatus {
 
     public SVNURL getURL() {
         return myUrl;
-    }
-
-    public Optional<SVNURL> getBranch() {
-        return myBranch;
     }
 
     public Optional<String> getBranchName() {
