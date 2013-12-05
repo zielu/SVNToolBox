@@ -3,6 +3,8 @@
  */
 package zielu.svntoolbox.ui.projectView.impl;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.projectView.ProjectViewNode;
 import com.intellij.ide.util.treeView.PresentableNodeDescriptor.ColoredFragment;
@@ -11,13 +13,13 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import org.jetbrains.annotations.Nullable;
-import zielu.svntoolbox.FileStatus;
 import zielu.svntoolbox.FileStatusCalculator;
+import zielu.svntoolbox.SvnToolBoxProject;
+import zielu.svntoolbox.async.AsyncFileStatusCalculator;
 import zielu.svntoolbox.config.SvnToolBoxAppState;
 import zielu.svntoolbox.projectView.ProjectViewManager;
 import zielu.svntoolbox.projectView.ProjectViewStatus;
 import zielu.svntoolbox.projectView.ProjectViewStatusCache;
-import zielu.svntoolbox.projectView.ProjectViewStatusCache.PutResult;
 import zielu.svntoolbox.ui.projectView.NodeDecoration;
 import zielu.svntoolbox.ui.projectView.NodeDecorationType;
 import zielu.svntoolbox.util.LogStopwatch;
@@ -45,6 +47,7 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
         return new SimpleTextAttributes(SimpleTextAttributes.STYLE_SMALLER, getBranchColor());
     }
     
+    @Nullable
     protected Object getParentValue(ProjectViewNode node) {
         return node.getParent() != null ? node.getParent().getValue() : null;
     }
@@ -59,20 +62,7 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
                 return cached.getBranchName();
             }
         } else {
-            FileStatus status = myStatusCalc.statusFor(node.getProject(), vFile);
-            PutResult result;
-            if (status.getBranchName().isPresent()) {
-                result = cache.add(vFile, new ProjectViewStatus(status.getBranchName().get()));
-            } else {
-                result = cache.add(vFile, ProjectViewStatus.EMPTY);
-            }
-            if (result != null) {
-                if (result.getFinalStatus().isEmpty()) {
-                    return null;
-                } else {
-                    return result.getFinalStatus().getBranchName();
-                }
-            }
+            AsyncFileStatusCalculator.getInstance(node.getProject()).scheduleStatusForFileUnderSvn(node.getProject(), vFile);            
         }
         return null;
     }
@@ -93,8 +83,8 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
         return new ColoredFragment(" [Svn: " + branchName + "]", getBranchAttributes());
     }
 
-    protected boolean isUnderSvn(ProjectViewNode node, ProjectViewManager manager) {
-        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "[" + manager.PV_SEQ.incrementAndGet() + "] Under SVN").start();
+    protected boolean isUnderSvn(ProjectViewNode node, AtomicInteger PV_SEQ) {
+        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "[" + PV_SEQ.incrementAndGet() + "] Under SVN").start();
         VirtualFile vFile = getVirtualFile(node);
         watch.tick("Get VFile");
         boolean result = false;
@@ -106,20 +96,16 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
         return result;
     }
 
-    protected abstract void applyDecoration(ProjectViewNode node, PresentationData data);
+    protected abstract void applyDecorationUnderSvn(ProjectViewNode node, PresentationData data);
     
     @Override
-    public void decorate(ProjectViewNode node, PresentationData data) {
-        ProjectViewManager pvManager = ProjectViewManager.getInstance(node.getProject());
-        if (isUnderSvn(node, pvManager)) {
-            LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "[" + pvManager.PV_SEQ.incrementAndGet() + "] Switched").start();
-            applyDecoration(node, data);
+    public final void decorate(ProjectViewNode node, PresentationData data) {
+        AtomicInteger PV_SEQ = SvnToolBoxProject.getInstance(node.getProject()).sequence();
+        if (isUnderSvn(node, PV_SEQ)) {
+            LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "[" + PV_SEQ.incrementAndGet() + "] Switched").start();
+            applyDecorationUnderSvn(node, data);
             watch.tick("Decoration");
         }
-    }
-
-    protected ProjectViewManager getProjectViewManager(ProjectViewNode node) {
-        return ProjectViewManager.getInstance(node.getProject());    
     }
 
     @Override

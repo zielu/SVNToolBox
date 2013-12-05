@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -67,7 +68,16 @@ public class FileStatusCalculator {
         }
         return result;
     }
-
+    
+    @NotNull
+    public FileStatus statusForFileUnderSvn(@Nullable Project project, @NotNull VirtualFile vFile) {
+        if (project == null) {
+            return new FileStatus();
+        }
+        SvnVcs svn = SvnVcs.getInstance(project);
+        return statusForFileUnderSvn(svn, project, vFile);        
+    }
+    
     @NotNull
     public FileStatus statusFor(@Nullable Project project, @NotNull VirtualFile vFile) {
         if (project == null) {
@@ -77,36 +87,57 @@ public class FileStatusCalculator {
         return statusFor(svn, project, vFile);
     }
 
+    private Optional<FileStatus> statusForCli(Project project, SVNURL fileUrl, File currentFile) {
+        SvnBranchConfigurationManager branchManager = SvnBranchConfigurationManager.getInstance(project);
+        //TODO: there is also #getWorkingCopyRootNew for Svn 1.8
+        File root = SvnUtil.getWorkingCopyRoot(currentFile);
+        try {
+            SvnBranchConfigurationNew branchConfig = branchManager.get(VfsUtil.findFileByIoFile(root, false));
+            String fileUrlPath = fileUrl.toString();
+            String baseName = branchConfig.getBaseName(fileUrlPath);
+            return Optional.of(new FileStatus(fileUrl, baseName));
+        } catch (VcsException e) {
+            LOG.error("Could not get branch configuration", e);
+        }
+        return Optional.absent();
+    }
+    
+    private Optional<FileStatus> statusForSvnKit(SVNInfo info, SvnVcs svn, SVNURL fileUrl) {
+        VirtualFile rootVf = SvnUtil.getVirtualFile(info.getWorkingCopyRoot().getPath());
+        SVNURL branch = SvnUtil.getBranchForUrl(svn, rootVf, fileUrl.toString());
+        return Optional.of(new FileStatus(fileUrl, branch));    
+    }
+    
+    @NotNull
+    private FileStatus statusForFileUnderSvn(@NotNull SvnVcs svn, @NotNull Project project, @NotNull VirtualFile vFile) {
+        File currentFile = new File(vFile.getPath());
+        SVNURL fileUrl = SvnUtil.getUrl(svn, currentFile);
+        if (fileUrl != null) {
+            SVNInfo info = svn.getInfo(vFile);
+            if (info != null) {
+                SvnConfiguration svnConfig = SvnConfiguration.getInstance(project);
+                if (svnConfig.isCommandLine()) {
+                    Optional<FileStatus> statusForCli = statusForCli(project, fileUrl, currentFile);
+                    if (statusForCli.isPresent()) {
+                        return statusForCli.get();
+                    }
+                } else {
+                    Optional<FileStatus> statusForSvnKit = statusForSvnKit(info, svn, fileUrl);
+                    if (statusForSvnKit.isPresent()) {
+                        return statusForSvnKit.get();
+                    }
+                }
+            } else {
+                return new FileStatus(fileUrl);
+            }
+        }
+        return new FileStatus();
+    }
+    
     @NotNull
     public FileStatus statusFor(@NotNull SvnVcs svn, @NotNull Project project, @NotNull VirtualFile vFile) {
         if (filesUnderSvn(svn, project, vFile)) {
-            File currentFile = new File(vFile.getPath());
-            SVNURL fileUrl = SvnUtil.getUrl(svn, currentFile);
-            if (fileUrl != null) {
-                SVNInfo info = svn.getInfo(vFile);
-                if (info != null) {
-                    SvnConfiguration svnConfig = SvnConfiguration.getInstance(project);
-                    if (svnConfig.isCommandLine()) {
-                        SvnBranchConfigurationManager branchManager = SvnBranchConfigurationManager.getInstance(project);
-                        //TODO: there is also #getWorkingCopyRootNew for Svn 1.8
-                        File root = SvnUtil.getWorkingCopyRoot(currentFile);
-                        try {
-                            SvnBranchConfigurationNew branchConfig = branchManager.get(VfsUtil.findFileByIoFile(root, false));
-                            String fileUrlPath = fileUrl.toString();
-                            String baseName = branchConfig.getBaseName(fileUrlPath);
-                            return new FileStatus(fileUrl, baseName);
-                        } catch (VcsException e) {
-                            LOG.error("Could not get branch configuration", e);
-                        }
-                    } else {
-                        VirtualFile rootVf = SvnUtil.getVirtualFile(info.getWorkingCopyRoot().getPath());
-                        SVNURL branch = SvnUtil.getBranchForUrl(svn, rootVf, fileUrl.toString());
-                        return new FileStatus(fileUrl, branch);
-                    }
-                } else {
-                    return new FileStatus(fileUrl);
-                }
-            }
+            return statusForFileUnderSvn(svn, project, vFile);    
         }
         return new FileStatus();
     }

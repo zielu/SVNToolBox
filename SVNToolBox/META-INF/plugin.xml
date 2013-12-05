@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/zielu/SVNToolBox">
   <id>zielu.svntoolbox</id>
   <name>SVNToolBox</name>
-  <version>13.0.1</version>
+  <version>13.0.2</version>
   <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
   
   <depends>com.intellij.modules.platform</depends>
@@ -37,10 +37,9 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes is 13.0.1</h3>
+      <h3>Changes is 13.0.2</h3>
       <ul>
-        <li>Added command line client support (<a href="https://github.com/zielu/SVNToolBox/issues/2">issue 2</a>)</li>
-        <li>Added 'Copy URL' action</li>
+        <li>Performance optimizations - branch status loading moved to background</li>
       </ul>
       ]]>
   </change-notes>
@@ -69,6 +68,9 @@
     </component>
     <component>
       <implementation-class>zielu.svntoolbox.projectView.ProjectViewManager</implementation-class>  
+    </component>
+    <component>
+      <implementation-class>zielu.svntoolbox.async.AsyncFileStatusCalculator</implementation-class>
     </component>
     <!-- Add your project components here -->
   </project-components>
