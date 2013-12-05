@@ -3,6 +3,11 @@
  */
 package zielu.svntoolbox.projectView;
 
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.google.common.collect.Sets;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.openapi.application.ApplicationManager;
@@ -21,12 +26,9 @@ import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.ex.VirtualFileManagerEx;
 import com.intellij.util.messages.MessageBusConnection;
 import zielu.svntoolbox.FileStatusCalculator;
+import zielu.svntoolbox.SvnToolBoxProject;
 import zielu.svntoolbox.config.SvnToolBoxProjectState;
 import zielu.svntoolbox.util.Vfs;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * <p></p>
@@ -38,16 +40,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ProjectViewManager extends AbstractProjectComponent {
     private final Logger LOG = Logger.getInstance(getClass());
 
-    private final ProjectViewStatusCache myStatusCache;
+    private final AtomicBoolean myActive = new AtomicBoolean();
 
-    public final AtomicInteger PV_SEQ = new AtomicInteger();
+    private ProjectViewStatusCache myStatusCache;
 
     private MessageBusConnection myConnection;
     private VirtualFileListener myVfListener;
 
+    private AtomicInteger PV_SEQ;
+
     public ProjectViewManager(Project project) {
         super(project);
-        myStatusCache = new ProjectViewStatusCache(PV_SEQ);
     }
 
     public static ProjectViewManager getInstance(Project project) {
@@ -58,18 +61,22 @@ public class ProjectViewManager extends AbstractProjectComponent {
         return myStatusCache;
     }
 
-    private void refreshProjectView(final Project project) {
+    public void refreshProjectView(final Project project) {
         if (SvnToolBoxProjectState.getInstance(project).showingAnyDecorations()) {
-            ApplicationManager.getApplication().invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    final ProjectView projectView = ProjectView.getInstance(project);
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Refreshing Project View");
+            if (myActive.get()) {
+                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (myActive.get()) {
+                            final ProjectView projectView = ProjectView.getInstance(project);
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Refreshing Project View");
+                            }
+                            projectView.refresh();
+                        }
                     }
-                    projectView.refresh();
-                }
-            });
+                });
+            }
         } else {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Project View refresh ignored - decorations disabled");
@@ -79,82 +86,90 @@ public class ProjectViewManager extends AbstractProjectComponent {
 
     @Override
     public void initComponent() {
-        myConnection = myProject.getMessageBus().connect();
-        myConnection.subscribe(DecorationToggleNotifier.TOGGLE_TOPIC, new DecorationToggleNotifier() {
-            @Override
-            public void decorationChanged(Project project) {
-                refreshProjectView(project);
-            }
-        });
-        myConnection.subscribe(VcsConfigurationChangeListener.BRANCHES_CHANGED, new Notification() {
-            @Override
-            public void execute(Project project, VirtualFile vcsRoot) {
-                refreshProjectView(project);
-            }
-        });
-        myConnection.subscribe(DecorationSettingsNotifier.TOGGLE_TOPIC, new DecorationSettingsNotifier() {
-            @Override
-            public void settingsChanged() {
-                refreshProjectView(myProject);
-            }
-        });
-        myConnection.subscribe(UpdatedFilesListener.UPDATED_FILES, new UpdatedFilesListener() {
-            final FileStatusCalculator myStatusCalc = new FileStatusCalculator();
-
-            @Override
-            public void consume(Set<String> paths) {
-                final Set<String> localPaths = Sets.newLinkedHashSet(paths);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Updated paths: " + localPaths);
+        super.initComponent();
+        if (myActive.compareAndSet(false, true)) {
+            PV_SEQ = SvnToolBoxProject.getInstance(myProject).sequence();
+            myStatusCache = new ProjectViewStatusCache(PV_SEQ);
+            myConnection = myProject.getMessageBus().connect();
+            myConnection.subscribe(DecorationToggleNotifier.TOGGLE_TOPIC, new DecorationToggleNotifier() {
+                @Override
+                public void decorationChanged(Project project) {
+                    refreshProjectView(project);
                 }
-                ApplicationManager.getApplication().invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        List<VirtualFile> vFiles = Vfs.pathsToFiles(localPaths);
-                        boolean somethingEvicted = myStatusCache.evictAll(vFiles);
-                        List<VirtualFile> vFilesUnderSvn = myStatusCalc.filterUnderSvn(myProject, vFiles);
-                        boolean somethingUnderSvn = vFilesUnderSvn.size() > 0;
-                        if (somethingEvicted || somethingUnderSvn) {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Requesting project view refresh: somethingEvicted=" + somethingEvicted + ", somethingUnderSvn=" + somethingUnderSvn);
-                            }
-                            refreshProjectView(myProject);
-                        }
+            });
+            myConnection.subscribe(VcsConfigurationChangeListener.BRANCHES_CHANGED, new Notification() {
+                @Override
+                public void execute(Project project, VirtualFile vcsRoot) {
+                    refreshProjectView(project);
+                }
+            });
+            myConnection.subscribe(DecorationSettingsNotifier.TOGGLE_TOPIC, new DecorationSettingsNotifier() {
+                @Override
+                public void settingsChanged() {
+                    refreshProjectView(myProject);
+                }
+            });
+            myConnection.subscribe(UpdatedFilesListener.UPDATED_FILES, new UpdatedFilesListener() {
+                final FileStatusCalculator myStatusCalc = new FileStatusCalculator();
+
+                @Override
+                public void consume(Set<String> paths) {
+                    final Set<String> localPaths = Sets.newLinkedHashSet(paths);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Updated paths: " + localPaths);
                     }
-                });
-            }
-        });
-
-        myVfListener = new VirtualFileAdapter() {
-            @Override
-            public void beforeFileDeletion(VirtualFileEvent event) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Before deletion: " + event);
+                    ApplicationManager.getApplication().invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            List<VirtualFile> vFiles = Vfs.pathsToFiles(localPaths);
+                            boolean somethingEvicted = myStatusCache.evictAll(vFiles);
+                            List<VirtualFile> vFilesUnderSvn = myStatusCalc.filterUnderSvn(myProject, vFiles);
+                            boolean somethingUnderSvn = vFilesUnderSvn.size() > 0;
+                            if (somethingEvicted || somethingUnderSvn) {
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Requesting project view refresh: somethingEvicted=" + somethingEvicted + ", somethingUnderSvn=" + somethingUnderSvn);
+                                }
+                                refreshProjectView(myProject);
+                            }
+                        }
+                    });
                 }
-                myStatusCache.evict(event.getFile());
-            }
+            });
 
-            @Override
-            public void beforeFileMovement(VirtualFileMoveEvent event) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Before move: " + event);
+            myVfListener = new VirtualFileAdapter() {
+                @Override
+                public void beforeFileDeletion(VirtualFileEvent event) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Before deletion: " + event);
+                    }
+                    myStatusCache.evict(event.getFile());
                 }
-                myStatusCache.evict(event.getFile());
-            }
-        };
-        VirtualFileManager vfm = VirtualFileManagerEx.getInstance();
-        vfm.addVirtualFileListener(myVfListener);
+
+                @Override
+                public void beforeFileMovement(VirtualFileMoveEvent event) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Before move: " + event);
+                    }
+                    myStatusCache.evict(event.getFile());
+                }
+            };
+            VirtualFileManager vfm = VirtualFileManagerEx.getInstance();
+            vfm.addVirtualFileListener(myVfListener);
+        }
     }
 
     @Override
     public void disposeComponent() {
-        if (myConnection != null) {
-            myConnection.disconnect();
+        if (myActive.compareAndSet(true, false)) {
+            if (myConnection != null) {
+                myConnection.disconnect();
+            }
+            VirtualFileManager vfm = VirtualFileManagerEx.getInstance();
+            if (myVfListener != null) {
+                vfm.removeVirtualFileListener(myVfListener);
+            }
+            myStatusCache.dispose();
         }
-        VirtualFileManager vfm = VirtualFileManagerEx.getInstance();
-        if (myVfListener != null) {
-            vfm.removeVirtualFileListener(myVfListener);
-        }
-        myStatusCache.dispose();
+        super.disposeComponent();
     }
 }

@@ -31,7 +31,7 @@ public class ClassFileDecoration extends AbstractNodeDecoration {
     }
 
     @Override
-    protected void applyDecoration(ProjectViewNode node, PresentationData data) {
+    protected void applyDecorationUnderSvn(ProjectViewNode node, PresentationData data) {
         String branchName = getBranchNameAndCache(node);
         if (branchName != null) {
             addSmartText(data, getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);

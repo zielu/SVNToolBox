@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/zielu/SVNToolBox">
   <id>zielu.svntoolbox</id>
   <name>SVNToolBox</name>
-  <version>12.0.0</version>
+  <version>12.0.1</version>
   <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
   
   <depends>com.intellij.modules.platform</depends>
@@ -29,6 +29,7 @@
       <li><b>Additional Subversion context menu actions:</b>
         <ul>
           <li>'Configure branches' extracted from 'Update' dialog as item</li>
+          <li>'Copy URL' to clipboard action</li>
         </ul>
       </li>
     </ul>
@@ -36,11 +37,11 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes in 12.0.0</h3>
+      <h3>Changes in 12.0.1</h3>
       <ul>
-        <li>Fixed compatibility with other products based on IntelliJ platform</li>
-        <li>Changed revision scheme to follow Idea versions</li>
-      <ul>
+        <li>Performance optimizations - branch status loading moved to background</li>
+        <li>Added 'Copy URL' action</li>
+      </ul>
       ]]>
   </change-notes>
 
@@ -68,6 +69,9 @@
     </component>
     <component>
       <implementation-class>zielu.svntoolbox.projectView.ProjectViewManager</implementation-class>  
+    </component>
+    <component>
+      <implementation-class>zielu.svntoolbox.async.AsyncFileStatusCalculator</implementation-class>
     </component>
     <!-- Add your project components here -->
   </project-components>

@@ -36,7 +36,7 @@ public class ModuleDecoration extends AbstractNodeDecoration {
     }
 
     @Override
-    protected void applyDecoration(ProjectViewNode node, PresentationData data) {
+    protected void applyDecorationUnderSvn(ProjectViewNode node, PresentationData data) {
         String branchName = getBranchNameAndCache(node);
         if (branchName != null) {
             data.addText(formatBranchName(branchName));

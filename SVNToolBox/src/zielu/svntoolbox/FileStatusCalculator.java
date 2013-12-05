@@ -3,7 +3,13 @@
  */
 package zielu.svntoolbox;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
+
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -15,10 +21,6 @@ import org.jetbrains.idea.svn.SvnVcs;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNInfo;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-
 /**
  * <p></p>
  * <br/>
@@ -27,6 +29,7 @@ import java.util.List;
  * @author Lukasz Zielinski
  */
 public class FileStatusCalculator {
+    private final Logger LOG = Logger.getInstance(getClass());
 
     public List<VirtualFile> filterUnderSvn(@NotNull Project project, Collection<VirtualFile> files) {
         List<VirtualFile> result = Lists.newArrayListWithCapacity(files.size());
@@ -62,6 +65,15 @@ public class FileStatusCalculator {
     }
 
     @NotNull
+    public FileStatus statusForFileUnderSvn(@Nullable Project project, @NotNull VirtualFile vFile) {
+        if (project == null) {
+            return new FileStatus();
+        }
+        SvnVcs svn = SvnVcs.getInstance(project);
+        return statusForFileUnderSvn(svn, project, vFile);
+    }
+
+    @NotNull
     public FileStatus statusFor(@Nullable Project project, @NotNull VirtualFile vFile) {
         if (project == null) {
             return new FileStatus();
@@ -70,21 +82,34 @@ public class FileStatusCalculator {
         return statusFor(svn, project, vFile);
     }
 
+    private Optional<FileStatus> statusForSvnKit(SVNInfo info, SvnVcs svn, SVNURL fileUrl) {
+        VirtualFile rootVf = SvnUtil.getVirtualFile(info.getWorkingCopyRoot().getPath());
+        SVNURL branch = SvnUtil.getBranchForUrl(svn, rootVf, fileUrl.toString());
+        return Optional.of(new FileStatus(fileUrl, branch));
+    }
+
+    @NotNull
+    private FileStatus statusForFileUnderSvn(@NotNull SvnVcs svn, @NotNull Project project, @NotNull VirtualFile vFile) {
+        File currentFile = new File(vFile.getPath());
+        SVNURL fileUrl = SvnUtil.getUrl(svn, currentFile);
+        if (fileUrl != null) {
+            SVNInfo info = svn.getInfo(vFile);
+            if (info != null) {
+                Optional<FileStatus> statusForSvnKit = statusForSvnKit(info, svn, fileUrl);
+                if (statusForSvnKit.isPresent()) {
+                    return statusForSvnKit.get();
+                }
+            } else {
+                return new FileStatus(fileUrl);
+            }
+        }
+        return new FileStatus();
+    }
+
     @NotNull
     public FileStatus statusFor(@NotNull SvnVcs svn, @NotNull Project project, @NotNull VirtualFile vFile) {
         if (filesUnderSvn(svn, project, vFile)) {
-            File currentFile = new File(vFile.getPath());
-            SVNURL fileUrl = SvnUtil.getUrl(svn, currentFile);
-            if (fileUrl != null) {
-                SVNInfo info = svn.getInfo(vFile);
-                if (info != null) {
-                    VirtualFile rootVf = SvnUtil.getVirtualFile(info.getWorkingCopyRoot().getPath());
-                    SVNURL branch = SvnUtil.getBranchForUrl(svn, rootVf, fileUrl.toString());
-                    return new FileStatus(fileUrl, branch);
-                } else {
-                    return new FileStatus(fileUrl);
-                }
-            }
+            return statusForFileUnderSvn(svn, project, vFile);
         }
         return new FileStatus();
     }
