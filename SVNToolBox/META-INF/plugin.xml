@@ -87,6 +87,10 @@
             text="Configure branches...">
       <add-to-group group-id="SubversionFilePopupGroup" anchor="last" />
     </action>
+    <action id="SvnToolBox.CopyURL" class="zielu.svntoolbox.ui.actions.CopyFileUrlAction"
+            text="Copy URL">
+      <add-to-group group-id="SubversionFilePopupGroup" anchor="last" />
+    </action>
   </actions>
 
   <extensionPoints>
