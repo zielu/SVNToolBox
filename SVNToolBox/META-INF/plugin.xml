@@ -39,7 +39,7 @@
   <change-notes><![CDATA[
       <h3>Changes is 13.0.2</h3>
       <ul>
-        <li>Performance optimizations - branch status loading moved to background</li>
+        <li>Performance optimizations - branch status loading moved to background (issue 3)</li>
       </ul>
       ]]>
   </change-notes>

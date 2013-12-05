@@ -76,7 +76,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent {
                     @Override
                     public void run() {
                         if (myCalculationInProgress.compareAndSet(false, true)) {
-                            boolean exhaused = false;
+                            boolean exhausted = false;
                             try {
                                 StatusRequest request = myRequestQueue.poll(70, TimeUnit.MILLISECONDS);
                                 if (request != null) {
@@ -84,7 +84,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent {
                                     boolean calculate = myPendingFiles.remove(request.file);
                                     myLock.unlock();
                                     if (calculate) {
-                                        AccessToken token = ApplicationManager.getApplication().acquireReadActionLock();                                        
+                                        AccessToken token = ApplicationManager.getApplication().acquireReadActionLock();
                                         //if we got here we can safely assume file is versioned in svn                                        
                                         try {
                                             LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "[" + PV_SEQ.incrementAndGet() + "] Status calculation for " + request.file).start();
@@ -95,33 +95,33 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent {
                                                 cache.add(request.file, new ProjectViewStatus(status.getBranchName().get()));
                                             } else {
                                                 cache.add(request.file, ProjectViewStatus.EMPTY);
-                                            }                                            
+                                            }
                                         } finally {
-                                            token.finish();                                            
+                                            token.finish();
                                         }
                                     } else {
                                         if (DEBUG) {
-                                            LOG.debug("[" + PV_SEQ.incrementAndGet() + "] "+request.file.getPath()+" was already calculated");
+                                            LOG.debug("[" + PV_SEQ.incrementAndGet() + "] " + request.file.getPath() + " was already calculated");
                                         }
                                     }
                                 } else {
                                     if (DEBUG) {
                                         LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Requests exhausted");
                                     }
-                                    exhaused = true;                                    
+                                    exhausted = true;
                                 }
                             } catch (InterruptedException e) {
                                 LOG.error(e);
                             } finally {
                                 if (myCalculationInProgress.compareAndSet(true, false)) {
-                                    if (exhaused) {
+                                    if (exhausted) {
                                         if (DEBUG) {
                                             LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Requesting Project View refresh");
                                         }
                                         myProjectViewManager.refreshProjectView(myProject);
                                     } else {
                                         if (DEBUG) {
-                                            LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Scheduling next status calculation - "+myRequestQueue.size()+" requests pending");
+                                            LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Scheduling next status calculation - " + myRequestQueue.size() + " requests pending");
                                         }
                                         calculateStatus();
                                     }
@@ -142,7 +142,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent {
         } else {
             if (DEBUG) {
                 LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Component inactive - status calculation cancelled");
-            }    
+            }
         }
     }
 
@@ -154,7 +154,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent {
             myPendingFiles.clear();
             myLock.unlock();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Project closed. Pending: files="+pendingFiles+", requests="+myRequestQueue.size());
+                LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Project closed. Pending: files=" + pendingFiles + ", requests=" + myRequestQueue.size());
             }
             myRequestQueue.clear();
         }
@@ -167,7 +167,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent {
         int pendingFiles = myPendingFiles.size();
         myPendingFiles.clear();
         if (LOG.isDebugEnabled()) {
-            LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Component disposed. Pending: files="+pendingFiles+", requests="+myRequestQueue.size());
+            LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Component disposed. Pending: files=" + pendingFiles + ", requests=" + myRequestQueue.size());
         }
         super.disposeComponent();
     }
@@ -184,7 +184,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent {
                         queued = true;
                     } else {
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("[" + PV_SEQ.incrementAndGet() + "] " + vFile.getPath()+" already awaits calculation");
+                            LOG.debug("[" + PV_SEQ.incrementAndGet() + "] " + vFile.getPath() + " already awaits calculation");
                         }
                     }
                     myLock.unlock();
@@ -192,7 +192,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent {
                         myRequestQueue.add(new StatusRequest(project, vFile));
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Queued request for " + vFile.getPath());
-                            LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Scheduling on-queued status calculation - "+myRequestQueue.size()+" requests pending");
+                            LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Scheduling on-queued status calculation - " + myRequestQueue.size() + " requests pending");
                         }
                         calculateStatus();
                     }
