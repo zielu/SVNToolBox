@@ -70,8 +70,9 @@ public class ProjectViewStatusCache implements Disposable {
     }
 
     /**
-     * Add new file status. Final status may be different than once passes and should
-     * read from operation result.
+     * Add new file status. 
+     *
+     * Final status may be different than one passed and should be read from operation result.
      *
      * @param file      file to add
      * @param candidate proposed status
