@@ -4,6 +4,7 @@
 package zielu.svntoolbox.projectView;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -152,6 +153,12 @@ public class ProjectViewStatusCache implements Disposable {
         return result;
     }
 
+    /**
+     * Evict passed file status
+     *
+     * @param file
+     * @return
+     */
     public boolean evict(VirtualFile file) {
         if (myActive.get()) {
             return evictFile(file);
@@ -159,6 +166,22 @@ public class ProjectViewStatusCache implements Disposable {
         return false;
     }
 
+    /**
+     * Evict passed file status and if it is a directory all its children
+     *
+     * @param file
+     * @return
+     */
+    public boolean evictAll(VirtualFile file) {
+        return evictAll(Collections.singleton(file));
+    }
+
+    /**
+     * Evict passed files status and if they are directories all their children
+     *
+     * @param files
+     * @return
+     */
     public boolean evictAll(Collection<VirtualFile> files) {
         if (myActive.get()) {
             boolean result = false;

@@ -100,6 +100,7 @@ public class ProjectViewManager extends AbstractProjectComponent {
             myConnection.subscribe(VcsConfigurationChangeListener.BRANCHES_CHANGED, new Notification() {
                 @Override
                 public void execute(Project project, VirtualFile vcsRoot) {
+                    myStatusCache.evictAll(vcsRoot.getCanonicalFile());
                     refreshProjectView(project);
                 }
             });
