@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/zielu/SVNToolBox">
   <id>zielu.svntoolbox</id>
   <name>SVNToolBox</name>
-  <version>13.0.2</version>
+  <version>13.0.3</version>
   <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
   
   <depends>com.intellij.modules.platform</depends>
@@ -37,9 +37,10 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes is 13.0.2</h3>
+      <h3>Changes is 13.0.3</h3>
       <ul>
-        <li>Performance optimizations - branch status loading moved to background (issue 3)</li>
+        <li>Performance optimizations - refinement</li>
+        <li>Fixed refresh after "Configure branches" (<a href="https://github.com/zielu/SVNToolBox/issues/5">issue 5</a>)
       </ul>
       ]]>
   </change-notes>
