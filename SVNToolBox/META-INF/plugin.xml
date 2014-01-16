@@ -87,6 +87,10 @@
               text="Show switched branches in Project View" />
       <add-to-group group-id="VcsGlobalGroup" anchor="after" relative-to-action="SubversionFilePopupGroup" />
     </group>
+    <action id="SvnToolBox.UpdateBranch" class="zielu.svntoolbox.ui.actions.MultiModuleBranchSwitchAction"
+            text="Switch modules">
+      <add-to-group group-id="SubversionFilePopupGroup" anchor="after" relative-to-action="UpdateFiles"/>      
+    </action>
     <action id="SvnToolBox.ConfigureBranches" class="zielu.svntoolbox.ui.actions.ConfigureBranchesAction"
             text="Configure branches...">
       <add-to-group group-id="SubversionFilePopupGroup" anchor="last" />

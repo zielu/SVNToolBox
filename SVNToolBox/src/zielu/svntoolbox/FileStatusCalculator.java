@@ -13,11 +13,9 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.svn.SvnBranchConfigurationManager;
 import org.jetbrains.idea.svn.SvnConfiguration;
 import org.jetbrains.idea.svn.SvnStatusUtil;
 import org.jetbrains.idea.svn.SvnUtil;
@@ -25,6 +23,7 @@ import org.jetbrains.idea.svn.SvnVcs;
 import org.jetbrains.idea.svn.branchConfig.SvnBranchConfigurationNew;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNInfo;
+import zielu.svntoolbox.util.Svn;
 
 /**
  * <p></p>
@@ -88,11 +87,8 @@ public class FileStatusCalculator {
     }
 
     private Optional<FileStatus> statusForCli(Project project, SVNURL fileUrl, File currentFile) {
-        SvnBranchConfigurationManager branchManager = SvnBranchConfigurationManager.getInstance(project);
-        //TODO: there is also #getWorkingCopyRootNew for Svn 1.8
-        File root = SvnUtil.getWorkingCopyRoot(currentFile);
-        try {
-            SvnBranchConfigurationNew branchConfig = branchManager.get(VfsUtil.findFileByIoFile(root, false));
+        try {            
+            SvnBranchConfigurationNew branchConfig = Svn.getBranchConfig(project, currentFile);
             String fileUrlPath = fileUrl.toString();
             String baseName = branchConfig.getBaseName(fileUrlPath);
             return Optional.of(new FileStatus(fileUrl, baseName));
