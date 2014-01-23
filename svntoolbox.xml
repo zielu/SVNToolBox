@@ -2,7 +2,7 @@
 <project name="svntoolbox" default="all">
   
   
-  <property file="svntoolbox.properties"/>
+  <property file="${svntoolbox.properties.file}"/>
   <!-- Uncomment the following property if no tests compilation is needed -->
   <!-- 
   <property name="skip.tests" value="true"/>
