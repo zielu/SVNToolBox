@@ -89,7 +89,7 @@ public class FileStatusCalculator {
 
     private Optional<File> getWCRoot(File currentFile) {
         //TODO: there is also #getWorkingCopyRootNew for Svn 1.8
-        File root = SvnUtil.getWorkingCopyRoot(currentFile);
+        File root = SvnUtil.getWorkingCopyRootNew(currentFile);
         if (root == null) {
             LOG.warn("WC root not found for: file="+currentFile.getAbsolutePath());
         }
