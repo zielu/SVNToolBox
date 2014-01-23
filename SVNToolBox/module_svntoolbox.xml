@@ -7,10 +7,7 @@
   <property name="module.jdk.classpath.svntoolbox" value="${project.jdk.classpath}" />
   
   <property name="compiler.args.svntoolbox" value="${compiler.args}" />
-  
-  <property name="svntoolbox.output.dir" value="R:/Idea/out/SVNToolBox/out/production/SVNToolBox" />
-  <property name="svntoolbox.testoutput.dir" value="R:/Idea/out/SVNToolBox/out/test/SVNToolBox" />
-  
+      
   <path id="svntoolbox.module.bootclasspath">
     <!-- Paths to be included in compilation bootclasspath -->
   </path>
@@ -81,7 +78,7 @@
   <!-- Build archive for plugin 'SVNToolBox' -->
   <target name="plugin.build.jar.svntoolbox" depends="compile.module.svntoolbox" description="Build plugin archive for module &#39;SVNToolBox&#39;">
     <jar destfile="${svntoolbox.plugin.path.jar}" duplicate="preserve">
-      <zipfileset dir="R:/Idea/out/SVNToolBox/out/production/SVNToolBox" />
+      <zipfileset dir="${svntoolbox.output.dir}" />
       <zipfileset file="${module.svntoolbox.basedir}/META-INF/*.xml" prefix="META-INF" />
       <zipfileset file="${module.svntoolbox.basedir}/../LICENSE" />
       <manifest>

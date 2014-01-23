@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/zielu/SVNToolBox">
   <id>zielu.svntoolbox</id>
   <name>SVNToolBox</name>
-  <version>13.0.3</version>
+  <version>13.0.3-dev</version>
   <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
   
   <depends>com.intellij.modules.platform</depends>
@@ -37,10 +37,10 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes is 13.0.3</h3>
+      <h3>Changes is 13.0.3-dev</h3>
       <ul>
-        <li>Performance optimizations - refinement</li>
-        <li>Fixed refresh after "Configure branches" (<a href="https://github.com/zielu/SVNToolBox/issues/5">issue 5</a>)
+        <li>Changed working copy root detection when SVN integration uses svnkit</li>
+        <li>Fixed some potential NullPointers</li>
       </ul>
       ]]>
   </change-notes>

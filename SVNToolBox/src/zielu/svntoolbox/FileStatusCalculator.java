@@ -87,25 +87,39 @@ public class FileStatusCalculator {
         return statusFor(svn, project, vFile);
     }
 
-    private Optional<FileStatus> statusForCli(Project project, SVNURL fileUrl, File currentFile) {
-        SvnBranchConfigurationManager branchManager = SvnBranchConfigurationManager.getInstance(project);
+    private Optional<File> getWCRoot(File currentFile) {
         //TODO: there is also #getWorkingCopyRootNew for Svn 1.8
         File root = SvnUtil.getWorkingCopyRoot(currentFile);
-        try {
-            SvnBranchConfigurationNew branchConfig = branchManager.get(VfsUtil.findFileByIoFile(root, false));
-            String fileUrlPath = fileUrl.toString();
-            String baseName = branchConfig.getBaseName(fileUrlPath);
-            return Optional.of(new FileStatus(fileUrl, baseName));
-        } catch (VcsException e) {
-            LOG.error("Could not get branch configuration", e);
+        if (root == null) {
+            LOG.warn("WC root not found for: file="+currentFile.getAbsolutePath());
+        }
+        return Optional.fromNullable(root);
+    }
+    
+    private Optional<FileStatus> statusForCli(Project project, SVNURL fileUrl, File currentFile) {        
+        Optional<File> root = getWCRoot(currentFile);
+        if (root.isPresent()) {
+            try {
+                SvnBranchConfigurationManager branchManager = SvnBranchConfigurationManager.getInstance(project);
+                SvnBranchConfigurationNew branchConfig = branchManager.get(VfsUtil.findFileByIoFile(root.get(), false));
+                String fileUrlPath = fileUrl.toString();
+                String baseName = branchConfig.getBaseName(fileUrlPath);
+                return Optional.of(new FileStatus(fileUrl, baseName));
+            } catch (VcsException e) {
+                LOG.error("Could not get branch configuration", e);
+            }            
         }
         return Optional.absent();
     }
     
-    private Optional<FileStatus> statusForSvnKit(SVNInfo info, SvnVcs svn, SVNURL fileUrl) {
-        VirtualFile rootVf = SvnUtil.getVirtualFile(info.getWorkingCopyRoot().getPath());
-        SVNURL branch = SvnUtil.getBranchForUrl(svn, rootVf, fileUrl.toString());
-        return Optional.of(new FileStatus(fileUrl, branch));    
+    private Optional<FileStatus> statusForSvnKit(SVNInfo info, SvnVcs svn, SVNURL fileUrl, File currentFile) {
+        Optional<File> root = getWCRoot(currentFile);
+        if (root.isPresent()) {
+            VirtualFile rootVf = SvnUtil.getVirtualFile(root.get().getPath());
+            SVNURL branch = SvnUtil.getBranchForUrl(svn, rootVf, fileUrl.toString());
+            return Optional.of(new FileStatus(fileUrl, branch));
+        }
+        return Optional.absent();
     }
     
     @NotNull
@@ -122,7 +136,7 @@ public class FileStatusCalculator {
                         return statusForCli.get();
                     }
                 } else {
-                    Optional<FileStatus> statusForSvnKit = statusForSvnKit(info, svn, fileUrl);
+                    Optional<FileStatus> statusForSvnKit = statusForSvnKit(info, svn, fileUrl, currentFile);
                     if (statusForSvnKit.isPresent()) {
                         return statusForSvnKit.get();
                     }
