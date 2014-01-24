@@ -15,19 +15,31 @@ import com.google.common.base.Preconditions;
  */
 public class ProjectViewStatus {
     public static final ProjectViewStatus EMPTY = new ProjectViewStatus();
-
+    public static final ProjectViewStatus PENDING = new ProjectViewStatus("...", true);
+    
     private final String myBranchName;
-
+    private final boolean myTemporary;
+    
     public ProjectViewStatus(String branchName) {
-        this.myBranchName = Preconditions.checkNotNull(branchName, "Null branch name");
+        this(branchName, false);
     }
 
+    private ProjectViewStatus(String branchName, boolean temporary) {
+        myBranchName = Preconditions.checkNotNull(branchName, "Null branch name");
+        myTemporary = temporary;
+    }
+    
     private ProjectViewStatus() {
         myBranchName = null;
+        myTemporary = false;
     }
 
     public boolean isEmpty() {
         return myBranchName == null;
+    }
+
+    public boolean isTemporary() {
+        return myTemporary;
     }
 
     public String getBranchName() {
@@ -60,7 +72,8 @@ public class ProjectViewStatus {
     @Override
     public String toString() {
         return Objects.toStringHelper(this)
-                .add("myBranchName", myBranchName)
+                .add("branchName", myBranchName)
+                .add("temporary", myTemporary)
                 .toString();
     }
 }

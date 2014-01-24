@@ -103,7 +103,19 @@ public class ProjectViewStatusCache implements Disposable {
             ProjectViewStatus status = myDirBranchesCache.get(current);
             if (status != null) {
                 if (!status.isEmpty()) {
-                    return status.equals(toCheck);
+                    if (status.isTemporary()) {
+                        if (toCheck.isTemporary()) {
+                            return status.equals(toCheck);
+                        } else {
+                            return false;    
+                        }
+                    } else {
+                        if (toCheck.isTemporary()) {
+                            return true;
+                        } else {
+                            return status.equals(toCheck);
+                        }
+                    }
                 }
             }
         }

@@ -20,6 +20,7 @@ import zielu.svntoolbox.config.SvnToolBoxAppState;
 import zielu.svntoolbox.projectView.ProjectViewManager;
 import zielu.svntoolbox.projectView.ProjectViewStatus;
 import zielu.svntoolbox.projectView.ProjectViewStatusCache;
+import zielu.svntoolbox.projectView.ProjectViewStatusCache.PutResult;
 import zielu.svntoolbox.ui.projectView.NodeDecoration;
 import zielu.svntoolbox.ui.projectView.NodeDecorationType;
 import zielu.svntoolbox.util.LogStopwatch;
@@ -61,10 +62,15 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
             if (!cached.isEmpty()) {
                 return cached.getBranchName();
             }
+            return null;
         } else {
-            AsyncFileStatusCalculator.getInstance(node.getProject()).scheduleStatusForFileUnderSvn(node.getProject(), vFile);            
-        }
-        return null;
+            PutResult result = cache.add(vFile, ProjectViewStatus.PENDING);                        
+            AsyncFileStatusCalculator.getInstance(node.getProject()).scheduleStatusForFileUnderSvn(node.getProject(), vFile);
+            if (result != null) {
+                return result.getFinalStatus().getBranchName();        
+            }
+            return null;
+        }        
     }
 
     protected void addSmartText(PresentationData data, String text, SimpleTextAttributes attributes) {

@@ -40,7 +40,8 @@
       <h3>Changes is 13.0.4-dev</h3>
       <ul>
         <li>Suspend decoration calculation during indexing</li>
-        <li>Use dedicated thread pool</li>
+        <li>Display pending decoration when file is under SVN but branch was not loaded yet</li>
+        <li>Use dedicated thread pool</li>        
         <li>Fixed NullPointer</li>
       </ul>
       ]]>
