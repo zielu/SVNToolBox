@@ -25,6 +25,7 @@ import org.jetbrains.idea.svn.SvnVcs;
 import org.jetbrains.idea.svn.branchConfig.SvnBranchConfigurationNew;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNInfo;
+import zielu.svntoolbox.util.LogStopwatch;
 
 /**
  * <p></p>
@@ -96,14 +97,21 @@ public class FileStatusCalculator {
         return Optional.fromNullable(root);
     }
     
-    private Optional<FileStatus> statusForCli(Project project, SVNURL fileUrl, File currentFile) {        
+    private Optional<FileStatus> statusForCli(Project project, SVNURL fileUrl, File currentFile) {
+        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "["+SvnToolBoxProject.getInstance(project).sequence().incrementAndGet()+"] Status For Cli").start();
         Optional<File> root = getWCRoot(currentFile);
+        watch.tick("WC Root");
         if (root.isPresent()) {
             try {
                 SvnBranchConfigurationManager branchManager = SvnBranchConfigurationManager.getInstance(project);
-                SvnBranchConfigurationNew branchConfig = branchManager.get(VfsUtil.findFileByIoFile(root.get(), false));
+                VirtualFile rootVf = VfsUtil.findFileByIoFile(root.get(), false);
+                watch.tick("Root VF by File");
+                SvnBranchConfigurationNew branchConfig = branchManager.get(rootVf);
+                watch.tick("Branch Config");
                 String fileUrlPath = fileUrl.toString();
                 String baseName = branchConfig.getBaseName(fileUrlPath);
+                watch.tick("Base Name");
+                watch.stop();
                 return Optional.of(new FileStatus(fileUrl, baseName));
             } catch (VcsException e) {
                 LOG.error("Could not get branch configuration", e);
