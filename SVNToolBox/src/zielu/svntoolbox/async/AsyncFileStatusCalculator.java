@@ -15,9 +15,12 @@ import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.DumbService;
+import com.intellij.openapi.project.DumbService.DumbModeListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.ConcurrentHashSet;
+import com.intellij.util.messages.MessageBusConnection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import zielu.svntoolbox.FileStatus;
@@ -44,9 +47,11 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
 
     private final AtomicBoolean myActive = new AtomicBoolean();
     private final AtomicBoolean myCalculationInProgress = new AtomicBoolean();
+    private final AtomicBoolean myCalculationAllowed = new AtomicBoolean(true);
 
     private ProjectViewManager myProjectViewManager;
     private AtomicInteger PV_SEQ;
+    private MessageBusConnection myConnection;
 
     public AsyncFileStatusCalculator(Project project) {
         super(project);
@@ -62,6 +67,27 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
         if (myActive.compareAndSet(false, true)) {
             myProjectViewManager = ProjectViewManager.getInstance(myProject);
             PV_SEQ = SvnToolBoxProject.getInstance(myProject).sequence();
+            myConnection = myProject.getMessageBus().connect();
+            myConnection.subscribe(DumbService.DUMB_MODE, new DumbModeListener() {
+                @Override
+                public void enteredDumbMode() {
+                    myCalculationAllowed.compareAndSet(true, false);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Entered Dumb-Mode");
+                    }
+                }
+
+                @Override
+                public void exitDumbMode() {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Exit Dumb-Mode");
+                    }
+                    myCalculationAllowed.compareAndSet(false, true);
+                    if (myRequestQueue.size() > 0) {
+                        calculateStatus();
+                    }
+                }
+            });
         }
     }
 
@@ -75,11 +101,17 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
 
     public void calculateStatus() {
         if (myActive.get()) {
-            if (!myCalculationInProgress.get()) {
-                ApplicationManager.getApplication().executeOnPooledThread(new Task());
+            if (myCalculationAllowed.get()) {
+                if (!myCalculationInProgress.get()) {
+                    ApplicationManager.getApplication().executeOnPooledThread(new Task());
+                } else {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Another status calculation in progress");
+                    }
+                }
             } else {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Another status calculation in progress");
+                    LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Calculation not available at this moment");
                 }
             }
         } else {
@@ -98,6 +130,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
                 LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Project closed. Pending: files=" + pendingFiles + ", requests=" + myRequestQueue.size());
             }
             myRequestQueue.clear();
+            myConnection.disconnect();
         }
         super.projectClosed();
     }
@@ -109,7 +142,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
         myPendingFiles.clear();
         if (LOG.isDebugEnabled()) {
             LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Component disposed. Pending: files=" + pendingFiles + ", requests=" + myRequestQueue.size());
-        }
+        }        
         super.disposeComponent();
     }
 
