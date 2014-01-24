@@ -13,7 +13,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.VcsException;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -88,25 +87,28 @@ public class FileStatusCalculator {
         return statusFor(svn, project, vFile);
     }
 
-    private Optional<File> getWCRoot(File currentFile) {
+    private Optional<VirtualFile> getWCRoot(File currentFile) {
         //TODO: there is also #getWorkingCopyRootNew for Svn 1.8
         File root = SvnUtil.getWorkingCopyRootNew(currentFile);
         if (root == null) {
             LOG.warn("WC root not found for: file="+currentFile.getAbsolutePath());
-        }
-        return Optional.fromNullable(root);
+            return Optional.absent();
+        } else {
+            VirtualFile rootVf = SvnUtil.getVirtualFile(root.getPath());
+            assert rootVf != null: "Root VF not found for: "+root.getPath();
+            return Optional.of(rootVf); 
+        } 
     }
     
     private Optional<FileStatus> statusForCli(Project project, SVNURL fileUrl, File currentFile) {
         LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "["+SvnToolBoxProject.getInstance(project).sequence().incrementAndGet()+"] Status For Cli").start();
-        Optional<File> root = getWCRoot(currentFile);
+        Optional<VirtualFile> root = getWCRoot(currentFile);
         watch.tick("WC Root");
         if (root.isPresent()) {
             try {
                 SvnBranchConfigurationManager branchManager = SvnBranchConfigurationManager.getInstance(project);
-                VirtualFile rootVf = VfsUtil.findFileByIoFile(root.get(), false);
                 watch.tick("Root VF by File");
-                SvnBranchConfigurationNew branchConfig = branchManager.get(rootVf);
+                SvnBranchConfigurationNew branchConfig = branchManager.get(root.get());
                 watch.tick("Branch Config");
                 String fileUrlPath = fileUrl.toString();
                 String baseName = branchConfig.getBaseName(fileUrlPath);
@@ -116,15 +118,16 @@ public class FileStatusCalculator {
             } catch (VcsException e) {
                 LOG.error("Could not get branch configuration", e);
             }            
+        } else {
+            watch.stop();
         }
         return Optional.absent();
     }
     
     private Optional<FileStatus> statusForSvnKit(SVNInfo info, SvnVcs svn, SVNURL fileUrl, File currentFile) {
-        Optional<File> root = getWCRoot(currentFile);
+        Optional<VirtualFile> root = getWCRoot(currentFile);
         if (root.isPresent()) {
-            VirtualFile rootVf = SvnUtil.getVirtualFile(root.get().getPath());
-            SVNURL branch = SvnUtil.getBranchForUrl(svn, rootVf, fileUrl.toString());
+            SVNURL branch = SvnUtil.getBranchForUrl(svn, root.get(), fileUrl.toString());
             return Optional.of(new FileStatus(fileUrl, branch));
         }
         return Optional.absent();
@@ -138,16 +141,14 @@ public class FileStatusCalculator {
             SVNInfo info = svn.getInfo(vFile);
             if (info != null) {
                 SvnConfiguration svnConfig = SvnConfiguration.getInstance(project);
+                Optional<FileStatus> status;
                 if (svnConfig.isCommandLine()) {
-                    Optional<FileStatus> statusForCli = statusForCli(project, fileUrl, currentFile);
-                    if (statusForCli.isPresent()) {
-                        return statusForCli.get();
-                    }
+                    status = statusForCli(project, fileUrl, currentFile);                    
                 } else {
-                    Optional<FileStatus> statusForSvnKit = statusForSvnKit(info, svn, fileUrl, currentFile);
-                    if (statusForSvnKit.isPresent()) {
-                        return statusForSvnKit.get();
-                    }
+                    status = statusForSvnKit(info, svn, fileUrl, currentFile);                    
+                }
+                if (status.isPresent()) {
+                    return status.get();
                 }
             } else {
                 return new FileStatus(fileUrl);
