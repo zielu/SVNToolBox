@@ -33,22 +33,27 @@ public class SvnProjectViewNodeDecorator implements ProjectViewNodeDecorator {
                 SvnToolBoxProjectState config = SvnToolBoxProjectState.getInstance(project);
                 if (config.showingAnyDecorations()) {
                     SvnToolBoxApp svnToolBox = SvnToolBoxApp.getInstance();
+                    SvnToolBoxProject svnToolBoxProject = SvnToolBoxProject.getInstance(project);
+                    
+                    LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "["+ svnToolBoxProject.sequence().incrementAndGet()+"] Decorator").start();
                     NodeDecoration decoration = svnToolBox.decorationFor(node);                    
-                                      
+                    watch.tick("Decoration selected {0}", decoration);
+                    
                     if (LOG.isDebugEnabled()) {
-                        final int seq = SvnToolBoxProject.getInstance(project).sequence().incrementAndGet();
+                        final int seq = svnToolBoxProject.sequence().incrementAndGet();
                         LOG.debug("[" + seq + "] Node: " + decoration.getClass().getName() 
                                 + " " + node + " " + node.getClass().getName());
                     }
                     if (decoration.getType() == NodeDecorationType.Module) {
-                        if (config.showProjectViewModuleDecoration) {
+                        if (config.showProjectViewModuleDecoration) {                            
                             decoration.decorate(node, data);
+                            watch.tick("Module decoration");
                         }
-                    } else if (config.showProjectViewSwitchedDecoration) {
-                        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "Switched decoration").start();
+                    } else if (config.showProjectViewSwitchedDecoration) {                        
                         decoration.decorate(node, data);
-                        watch.stop();
+                        watch.tick("Switched decoration");                        
                     }
+                    watch.stop();
                 }
             }
 

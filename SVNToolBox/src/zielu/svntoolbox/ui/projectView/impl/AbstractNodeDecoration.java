@@ -99,6 +99,7 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
             watch.tick("Under control={0}", underControl);
             result = underControl;
         }
+        watch.stop();
         return result;
     }
 
@@ -108,9 +109,9 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
     public final void decorate(ProjectViewNode node, PresentationData data) {
         AtomicInteger PV_SEQ = SvnToolBoxProject.getInstance(node.getProject()).sequence();
         if (isUnderSvn(node, PV_SEQ)) {
-            LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "[" + PV_SEQ.incrementAndGet() + "] Switched").start();
+            LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "[" + PV_SEQ.incrementAndGet() + "] Decorate").start();
             applyDecorationUnderSvn(node, data);
-            watch.tick("Decoration");
+            watch.tick("Apply");
         }
     }
 
