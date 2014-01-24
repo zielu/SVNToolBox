@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import zielu.svntoolbox.FileStatus;
 import zielu.svntoolbox.FileStatusCalculator;
+import zielu.svntoolbox.SvnToolBoxApp;
 import zielu.svntoolbox.SvnToolBoxProject;
 import zielu.svntoolbox.projectView.ProjectViewManager;
 import zielu.svntoolbox.projectView.ProjectViewStatus;
@@ -41,6 +42,8 @@ import zielu.svntoolbox.util.LogStopwatch;
 public class AsyncFileStatusCalculator extends AbstractProjectComponent implements AsyncStatusCalc {
     private final Logger LOG = Logger.getInstance(getClass());
 
+    private final SvnToolBoxApp app;
+    
     private final FileStatusCalculator myStatusCalc = new FileStatusCalculator();
     private final BlockingQueue<StatusRequest> myRequestQueue = new LinkedBlockingQueue<StatusRequest>();
     private final Set<VirtualFile> myPendingFiles = new ConcurrentHashSet<VirtualFile>();
@@ -53,8 +56,9 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
     private AtomicInteger PV_SEQ;
     private MessageBusConnection myConnection;
 
-    public AsyncFileStatusCalculator(Project project) {
+    public AsyncFileStatusCalculator(Project project, SvnToolBoxApp app) {
         super(project);
+        this.app = app;        
     }
 
     public static AsyncFileStatusCalculator getInstance(@NotNull Project project) {
@@ -103,7 +107,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
         if (myActive.get()) {
             if (myCalculationAllowed.get()) {
                 if (!myCalculationInProgress.get()) {
-                    ApplicationManager.getApplication().executeOnPooledThread(new Task());
+                    app.submit(new Task());
                 } else {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Another status calculation in progress");
