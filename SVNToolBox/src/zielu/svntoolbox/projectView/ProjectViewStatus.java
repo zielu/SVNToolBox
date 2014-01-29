@@ -27,7 +27,7 @@ public class ProjectViewStatus {
             return this == other;            
         }        
     };
-    public static final ProjectViewStatus NOT_CONFIGURED = new ProjectViewStatus(SvnToolBoxBundle.getString("status.svn.notConfigured"), true) {
+    public static final ProjectViewStatus NOT_CONFIGURED = new ProjectViewStatus(SvnToolBoxBundle.getString("status.svn.notConfigured"), false) {
         @Override
         public boolean equals(Object other) {
             return this == other;            

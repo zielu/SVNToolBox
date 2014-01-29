@@ -9,6 +9,7 @@ import com.intellij.ide.projectView.impl.nodes.ClassTreeNode;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.util.PsiUtilBase;
 import com.intellij.ui.SimpleTextAttributes;
+import zielu.svntoolbox.projectView.ProjectViewStatus;
 
 /**
  * <p></p>
@@ -32,10 +33,10 @@ public class ClassFileDecoration extends AbstractNodeDecoration {
 
     @Override
     protected void applyDecorationUnderSvn(ProjectViewNode node, PresentationData data) {
-        String branchName = getBranchNameAndCache(node);
-        if (branchName != null) {
+        ProjectViewStatus status = getBranchStatusAndCache(node);
+        if (shouldApplyDecoration(status)) {
             addSmartText(data, getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
-            data.addText(formatBranchName(branchName));
+            data.addText(formatBranchName(status));
         }
     }
 

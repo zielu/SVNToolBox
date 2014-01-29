@@ -3,6 +3,7 @@
  */
 package zielu.svntoolbox.ui.projectView.impl;
 
+import java.awt.Color;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.intellij.ide.projectView.PresentationData;
@@ -35,6 +36,7 @@ import zielu.svntoolbox.util.LogStopwatch;
  */
 public abstract class AbstractNodeDecoration implements NodeDecoration {
     private final static String PREFIX = SvnToolBoxBundle.getString("status.svn.prefix");
+    private final static JBColor TEMPORARY_COLOR = new JBColor(new Color(77, 81, 84), new Color(86, 90, 93));
     
     protected final Logger LOG = Logger.getInstance(getClass());    
     protected final FileStatusCalculator myStatusCalc = new FileStatusCalculator();
@@ -43,12 +45,16 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
 
     protected abstract VirtualFile getVirtualFile(ProjectViewNode node);
 
-    protected JBColor getBranchColor() {
-        return SvnToolBoxAppState.getInstance().getProjectViewDecorationColor();
+    protected JBColor getBranchColor(boolean temporary) {
+        if (temporary) {
+            return TEMPORARY_COLOR;
+        } else {
+            return SvnToolBoxAppState.getInstance().getProjectViewDecorationColor();
+        }
     }
 
-    protected SimpleTextAttributes getBranchAttributes() {
-        return new SimpleTextAttributes(SimpleTextAttributes.STYLE_SMALLER, getBranchColor());
+    private SimpleTextAttributes getBranchAttributes(ProjectViewStatus status) {        
+        return new SimpleTextAttributes(SimpleTextAttributes.STYLE_SMALLER, getBranchColor(status.isTemporary()));
     }
     
     @Nullable
@@ -57,20 +63,20 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
     }
 
     @Nullable
-    protected String getBranchNameAndCache(ProjectViewNode node) {
+    protected ProjectViewStatus getBranchStatusAndCache(ProjectViewNode node) {
         ProjectViewStatusCache cache = ProjectViewManager.getInstance(node.getProject()).getStatusCache();
         VirtualFile vFile = getVirtualFile(node);
         ProjectViewStatus cached = cache.get(vFile);
         if (cached != null) {
             if (!cached.isEmpty()) {
-                return cached.getBranchName();
+                return cached;
             }
             return null;
         } else {
             PutResult result = cache.add(vFile, ProjectViewStatus.PENDING);                        
             AsyncFileStatusCalculator.getInstance(node.getProject()).scheduleStatusForFileUnderSvn(node.getProject(), vFile);
             if (result != null) {
-                return result.getFinalStatus().getBranchName();        
+                return result.getFinalStatus();        
             }
             return null;
         }        
@@ -88,8 +94,8 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
         }
     }
 
-    protected ColoredFragment formatBranchName(String branchName) {
-        return new ColoredFragment(" ["+PREFIX+" " + branchName + "]", getBranchAttributes());
+    protected ColoredFragment formatBranchName(ProjectViewStatus status) {
+        return new ColoredFragment(" ["+PREFIX+" " + status.getBranchName() + "]", getBranchAttributes(status));
     }
 
     protected boolean isUnderSvn(ProjectViewNode node, AtomicInteger PV_SEQ) {
@@ -106,6 +112,10 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
         return result;
     }
 
+    protected boolean shouldApplyDecoration(ProjectViewStatus status) {
+        return status != null && status.getBranchName() != null;
+    }
+    
     protected abstract void applyDecorationUnderSvn(ProjectViewNode node, PresentationData data);
     
     @Override

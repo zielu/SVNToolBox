@@ -9,6 +9,7 @@ import com.intellij.ide.projectView.impl.ModuleGroup;
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import zielu.svntoolbox.projectView.ProjectViewStatus;
 import zielu.svntoolbox.ui.projectView.NodeDecorationType;
 
 /**
@@ -37,9 +38,9 @@ public class ModuleDecoration extends AbstractNodeDecoration {
 
     @Override
     protected void applyDecorationUnderSvn(ProjectViewNode node, PresentationData data) {
-        String branchName = getBranchNameAndCache(node);
-        if (branchName != null) {
-            data.addText(formatBranchName(branchName));
+        ProjectViewStatus status = getBranchStatusAndCache(node);
+        if (shouldApplyDecoration(status)) {
+            data.addText(formatBranchName(status));
         }
     }
 
