@@ -50,6 +50,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
 
     private final static String NA = SvnToolBoxBundle.getString("status.svn.na");
     private final static String EMPTY_BRANCH = SvnToolBoxBundle.getString("status.svn.notConfigured");
+    private final static String PREFIX = SvnToolBoxBundle.getString("status.svn.prefix");
 
     private final FileStatusCalculator myStatusCalculator = new FileStatusCalculator();
     private final MessageBusConnection myConnection;
@@ -165,15 +166,15 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     }
 
     private boolean empty() {
-        boolean result = setToolTip("");
-        if (setText(NA) && !result) {
+        boolean result = setToolTip(SvnToolBoxBundle.getString("status.svn.na.tooltip"));
+        if (setText(PREFIX+" "+NA) && !result) {
             result = true;
         }
         return result;
     }
 
     private String prepareBranchText(FileStatus status) {
-        StringBuilder text = new StringBuilder("Svn: ");
+        StringBuilder text = new StringBuilder(PREFIX).append(" ");
         if (status.getBranchName().isPresent()) {
             text.append(status.getBranchName().get());
         } else {

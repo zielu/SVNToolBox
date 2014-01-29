@@ -5,6 +5,7 @@ package zielu.svntoolbox.projectView;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import zielu.svntoolbox.SvnToolBoxBundle;
 
 /**
  * <p></p>
@@ -14,8 +15,24 @@ import com.google.common.base.Preconditions;
  * @author Lukasz Zielinski
  */
 public class ProjectViewStatus {
-    public static final ProjectViewStatus EMPTY = new ProjectViewStatus();
-    public static final ProjectViewStatus PENDING = new ProjectViewStatus("...", true);
+    public static final ProjectViewStatus EMPTY = new ProjectViewStatus() {
+        @Override
+        public boolean equals(Object other) {
+            return this == other;            
+        }    
+    };
+    public static final ProjectViewStatus PENDING = new ProjectViewStatus(SvnToolBoxBundle.getString("status.svn.pending"), true) {
+        @Override
+        public boolean equals(Object other) {
+            return this == other;            
+        }        
+    };
+    public static final ProjectViewStatus NOT_CONFIGURED = new ProjectViewStatus(SvnToolBoxBundle.getString("status.svn.notConfigured"), true) {
+        @Override
+        public boolean equals(Object other) {
+            return this == other;            
+        }    
+    };
     
     private final String myBranchName;
     private final boolean myTemporary;

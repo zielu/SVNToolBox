@@ -14,6 +14,7 @@ import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import org.jetbrains.annotations.Nullable;
 import zielu.svntoolbox.FileStatusCalculator;
+import zielu.svntoolbox.SvnToolBoxBundle;
 import zielu.svntoolbox.SvnToolBoxProject;
 import zielu.svntoolbox.async.AsyncFileStatusCalculator;
 import zielu.svntoolbox.config.SvnToolBoxAppState;
@@ -33,6 +34,8 @@ import zielu.svntoolbox.util.LogStopwatch;
  * @author Lukasz Zielinski
  */
 public abstract class AbstractNodeDecoration implements NodeDecoration {
+    private final static String PREFIX = SvnToolBoxBundle.getString("status.svn.prefix");
+    
     protected final Logger LOG = Logger.getInstance(getClass());    
     protected final FileStatusCalculator myStatusCalc = new FileStatusCalculator();
     
@@ -86,7 +89,7 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
     }
 
     protected ColoredFragment formatBranchName(String branchName) {
-        return new ColoredFragment(" [Svn: " + branchName + "]", getBranchAttributes());
+        return new ColoredFragment(" ["+PREFIX+" " + branchName + "]", getBranchAttributes());
     }
 
     protected boolean isUnderSvn(ProjectViewNode node, AtomicInteger PV_SEQ) {
