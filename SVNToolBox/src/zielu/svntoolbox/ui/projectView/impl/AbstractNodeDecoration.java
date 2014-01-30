@@ -36,7 +36,7 @@ import zielu.svntoolbox.util.LogStopwatch;
  */
 public abstract class AbstractNodeDecoration implements NodeDecoration {
     private final static String PREFIX = SvnToolBoxBundle.getString("status.svn.prefix");
-    private final static JBColor TEMPORARY_COLOR = new JBColor(new Color(77, 81, 84), new Color(86, 90, 93));
+    private final static JBColor TEMPORARY_COLOR = new JBColor(new Color(77, 81, 84), new Color(115, 119, 122));
     
     protected final Logger LOG = Logger.getInstance(getClass());    
     protected final FileStatusCalculator myStatusCalc = new FileStatusCalculator();
