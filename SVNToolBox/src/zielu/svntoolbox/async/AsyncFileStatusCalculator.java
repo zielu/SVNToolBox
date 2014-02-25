@@ -87,9 +87,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
                         LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Exit Dumb-Mode");
                     }
                     myCalculationAllowed.compareAndSet(false, true);
-                    if (myRequestQueue.size() > 0) {
-                        calculateStatus();
-                    }
+                    calculateStatus();
                 }
             });
         }
