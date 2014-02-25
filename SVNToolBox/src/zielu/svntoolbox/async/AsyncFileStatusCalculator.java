@@ -150,7 +150,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
         super.disposeComponent();
     }
 
-    public Optional<FileStatus> scheduleStatusForFileUnderSvn(@Nullable Project project, @NotNull VirtualFile vFile) {
+    public Optional<FileStatus> scheduleStatusFor(@Nullable Project project, @NotNull VirtualFile vFile) {
         if (myActive.get()) {
             if (project == null) {
                 return Optional.of(new FileStatus());
@@ -183,18 +183,23 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
                     StatusRequest request = myRequestQueue.poll(70, TimeUnit.MILLISECONDS);
                     if (request != null) {
                         if (myPendingFiles.remove(request.file)) {
-                            AccessToken token = ApplicationManager.getApplication().acquireReadActionLock();
-                            //if we got here we can safely assume file is versioned in svn                                        
+                            AccessToken token = ApplicationManager.getApplication().acquireReadActionLock();                                        
                             try {
                                 LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "[" + PV_SEQ.incrementAndGet() + "] Status calculation for " + request.file).start();
-                                FileStatus status = myStatusCalc.statusForFileUnderSvn(request.project, request.file);
-                                watch.stop();
                                 ProjectViewStatusCache cache = myProjectViewManager.getStatusCache();
-                                if (status.getBranchName().isPresent()) {
-                                    cache.add(request.file, new ProjectViewStatus(status.getBranchName().get()));
+                                ProjectViewStatus viewStatus;                                 
+                                FileStatus status = myStatusCalc.statusFor(request.project, request.file);
+                                watch.stop();
+                                if (status.isUnderVcs()) {
+                                    if (status.getBranchName().isPresent()) {
+                                        viewStatus = new ProjectViewStatus(status.getBranchName().get());
+                                    } else {
+                                        viewStatus = ProjectViewStatus.NOT_CONFIGURED;
+                                    }
                                 } else {
-                                    cache.add(request.file, ProjectViewStatus.EMPTY);
+                                    viewStatus = ProjectViewStatus.EMPTY;    
                                 }
+                                cache.add(request.file, viewStatus);
                             } finally {
                                 token.finish();
                             }

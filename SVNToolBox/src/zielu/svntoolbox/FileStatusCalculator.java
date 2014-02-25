@@ -13,6 +13,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.VcsException;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,22 +40,38 @@ public class FileStatusCalculator {
     public List<VirtualFile> filterUnderSvn(@NotNull Project project, Collection<VirtualFile> files) {
         List<VirtualFile> result = Lists.newArrayListWithCapacity(files.size());
         for (VirtualFile vFile : files) {
-            if (filesUnderSvn(project, vFile)) {
+            if (fastAllFilesUnderSvn(project, vFile)) {
                 result.add(vFile);
             }
         }
         return result;
     }
 
-    public boolean filesUnderSvn(@Nullable Project project, VirtualFile... vFiles) {
+    public boolean allFilesUnderSvn(@Nullable Project project, VirtualFile... vFiles) {
         if (project == null) {
             return false;
         }
         final SvnVcs svn = SvnVcs.getInstance(project);
-        return filesUnderSvn(svn, project, vFiles);
+        return allFilesUnderSvn(svn, project, vFiles);
     }
 
-    public boolean filesUnderSvn(@NotNull SvnVcs svn, @Nullable Project project, VirtualFile... vFiles) {
+    public boolean allFilesUnderSvn(@NotNull SvnVcs svn, @Nullable Project project, VirtualFile... vFiles) {
+        return allFilesUnderSvnImpl(svn, project, false, vFiles);
+    }
+    
+    public boolean fastAllFilesUnderSvn(@Nullable Project project, VirtualFile... vFiles) {
+        if (project == null) {
+            return false;
+        }
+        final SvnVcs svn = SvnVcs.getInstance(project);
+        return fastAllFilesUnderSvn(svn, project, vFiles);
+    }
+    
+    public boolean fastAllFilesUnderSvn(@NotNull SvnVcs svn, @Nullable Project project, VirtualFile... vFiles) {
+        return allFilesUnderSvnImpl(svn, project, true, vFiles);    
+    }
+    
+    private boolean allFilesUnderSvnImpl(@NotNull SvnVcs svn, @Nullable Project project, boolean fast, VirtualFile... vFiles) {
         if (project == null) {
             return false;
         }
@@ -63,19 +80,14 @@ public class FileStatusCalculator {
             for (VirtualFile vFile : vFiles) {
                 if (!SvnStatusUtil.isUnderControl(project, vFile)) {
                     return false;
+                } else if (!fast) {
+                    if (!getWCRoot(VfsUtilCore.virtualToIoFile(vFile)).isPresent()) {
+                        return false;
+                    }
                 }
             }
         }
         return result;
-    }
-    
-    @NotNull
-    public FileStatus statusForFileUnderSvn(@Nullable Project project, @NotNull VirtualFile vFile) {
-        if (project == null) {
-            return new FileStatus();
-        }
-        SvnVcs svn = SvnVcs.getInstance(project);
-        return statusForFileUnderSvn(svn, project, vFile);        
     }
     
     @NotNull
@@ -84,14 +96,14 @@ public class FileStatusCalculator {
             return new FileStatus();
         }
         SvnVcs svn = SvnVcs.getInstance(project);
-        return statusFor(svn, project, vFile);
+        return statusFor(svn, project, vFile);        
     }
 
     private Optional<VirtualFile> getWCRoot(File currentFile) {
         //TODO: there is also #getWorkingCopyRootNew for Svn 1.8
         File root = SvnUtil.getWorkingCopyRootNew(currentFile);
         if (root == null) {
-            LOG.warn("WC root not found for: file="+currentFile.getAbsolutePath());
+            LOG.debug("WC root not found for: file="+currentFile.getAbsolutePath());
             return Optional.absent();
         } else {
             VirtualFile rootVf = SvnUtil.getVirtualFile(root.getPath());
@@ -134,8 +146,8 @@ public class FileStatusCalculator {
     }
     
     @NotNull
-    private FileStatus statusForFileUnderSvn(@NotNull SvnVcs svn, @NotNull Project project, @NotNull VirtualFile vFile) {
-        File currentFile = new File(vFile.getPath());
+    public FileStatus statusFor(@NotNull SvnVcs svn, @NotNull Project project, @NotNull VirtualFile vFile) {
+        File currentFile = VfsUtilCore.virtualToIoFile(vFile);
         SVNURL fileUrl = SvnUtil.getUrl(svn, currentFile);
         if (fileUrl != null) {
             SVNInfo info = svn.getInfo(vFile);
@@ -153,14 +165,6 @@ public class FileStatusCalculator {
             } else {
                 return new FileStatus(fileUrl);
             }
-        }
-        return new FileStatus();
-    }
-    
-    @NotNull
-    public FileStatus statusFor(@NotNull SvnVcs svn, @NotNull Project project, @NotNull VirtualFile vFile) {
-        if (filesUnderSvn(svn, project, vFile)) {
-            return statusForFileUnderSvn(svn, project, vFile);    
         }
         return new FileStatus();
     }

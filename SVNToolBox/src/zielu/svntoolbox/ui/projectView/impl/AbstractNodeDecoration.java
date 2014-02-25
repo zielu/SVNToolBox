@@ -74,7 +74,7 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
             return null;
         } else {
             PutResult result = cache.add(vFile, ProjectViewStatus.PENDING);                        
-            AsyncFileStatusCalculator.getInstance(node.getProject()).scheduleStatusForFileUnderSvn(node.getProject(), vFile);
+            AsyncFileStatusCalculator.getInstance(node.getProject()).scheduleStatusFor(node.getProject(), vFile);
             if (result != null) {
                 return result.getFinalStatus();        
             }
@@ -104,7 +104,7 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
         watch.tick("Get VFile");
         boolean result = false;
         if (vFile != null) {
-            boolean underControl = myStatusCalc.filesUnderSvn(node.getProject(), vFile);
+            boolean underControl = myStatusCalc.fastAllFilesUnderSvn(node.getProject(), vFile);
             watch.tick("Under control={0}", underControl);
             result = underControl;
         }
