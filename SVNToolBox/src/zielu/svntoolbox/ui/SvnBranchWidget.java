@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
+import com.google.common.base.Suppliers;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
@@ -255,7 +256,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
             ApplicationManager.getApplication().invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "UpdateUi").start();
+                    LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, Suppliers.ofInstance("UpdateUi")).start();
                     UpdateResult result = maybeResult.get();
                     boolean empty = true;
                     AtomicBoolean updated = new AtomicBoolean();
@@ -300,7 +301,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     }
 
     private Optional<UpdateResult> update(@NotNull Project project, Optional<VirtualFile> vcsRoot) {
-        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "Update").start();
+        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, Suppliers.ofInstance("Update")).start();
         SvnVcs svn = SvnVcs.getInstance(project);
         FileStatus status = null;
         VirtualFile currentVf = null;

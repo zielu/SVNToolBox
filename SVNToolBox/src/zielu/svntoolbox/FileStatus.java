@@ -16,12 +16,15 @@ import org.tmatesoft.svn.core.SVNURL;
  * @author Lukasz Zielinski
  */
 public class FileStatus {
+    public static final FileStatus EMPTY = new FileStatus();
+    public static final Optional<FileStatus> EMPTY_OPTIONAL = Optional.of(EMPTY);
+    
     private final boolean myUnderVcs;
     private final SVNURL myUrl;
     private final Optional<String> myBranchName;
     private final Optional<String> myBranchDirectory;
 
-    public FileStatus() {
+    private FileStatus() {
         myUnderVcs = false;
         myUrl = null;
         myBranchName = Optional.absent();

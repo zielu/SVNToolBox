@@ -43,10 +43,10 @@ public class ContentRootDecoration extends AbstractNodeDecoration {
     @Override
     public boolean isForMe(ProjectViewNode node) {
         if (node instanceof PsiDirectoryNode) {
-            PsiDirectoryNode dirNode = (PsiDirectoryNode) node;
-            final Project project = dirNode.getProject();
+            PsiDirectoryNode dirNode = (PsiDirectoryNode) node;            
             final PsiDirectory psiDirectory = dirNode.getValue();
             if (psiDirectory != null) {
+                final Project project = dirNode.getProject();
                 final VirtualFile directoryFile = psiDirectory.getVirtualFile();
                 return (ProjectRootsUtil.isModuleContentRoot(directoryFile, project)
                         || ProjectRootsUtil.isInSource(directoryFile, project));

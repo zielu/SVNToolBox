@@ -1,9 +1,9 @@
 <idea-plugin version="2" url="https://github.com/zielu/SVNToolBox">
   <id>zielu.svntoolbox</id>
   <name>SVNToolBox</name>
-    <version>13.0.5</version>
-    <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
-  
+  <version>13.0.5-dev2</version>
+  <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
+    
   <depends>com.intellij.modules.platform</depends>
   <depends>Subversion</depends>
   <depends optional="true" config-file="java-features.xml">com.intellij.modules.java</depends>
@@ -37,13 +37,9 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes is 13.0.5</h3>
+      <h3>Changes is 13.0.5-dev2</h3>
       <ul>
-        <li>Suspend decoration calculation during indexing</li>
-        <li>Display 'Loading' decoration when file is under SVN but branch info is not yet loaded</li>
-        <li>Display 'Not configured' decoration when branches are not configured</li>
-        <li>Use dedicated thread pool</li>        
-        <li>Fixed NullPointer</li>
+        <li>Minor optimizations</li>        
       </ul>
       ]]>
   </change-notes>

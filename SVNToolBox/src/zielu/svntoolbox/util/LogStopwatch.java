@@ -3,10 +3,13 @@
  */
 package zielu.svntoolbox.util;
 
-import com.intellij.openapi.diagnostic.Logger;
-
 import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
+
+import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Supplier;
+import com.intellij.openapi.diagnostic.Logger;
 
 /**
  * <p></p>
@@ -17,75 +20,71 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class LogStopwatch {
     protected final Logger LOG;
-    private final String myName;
-    private long myStart;
-    private long myLastTick;
-
-    protected LogStopwatch(Logger log, String name) {
+    private final Supplier<String> myNameSupplier;
+    private final Optional<Supplier<Integer>> mySequence;
+    private final Stopwatch myStopwatch = new Stopwatch();
+    
+    private String myName;
+    
+    protected LogStopwatch(Logger log, Optional<Supplier<Integer>> sequence, Supplier<String> nameSupplier) {
         LOG = log;
-        this.myName = name;
+        myNameSupplier = nameSupplier;
+        mySequence = sequence;
     }
 
     public LogStopwatch start() {
         if (isEnabled()) {
-            startInternal();
+            myStopwatch.start();
+            myName = myNameSupplier.get();
         }
         return this;
     }
 
-    private void startInternal() {
-        myStart = System.nanoTime();
+    private String prepareName(String prefix) {
+        return "["+prefix+":" + myName + (mySequence.isPresent() ? "|"+mySequence.get().get() : "") +"]";            
     }
-
+    
     public void tick(String message, Object... args) {
         if (isEnabled()) {
-            long time = tickInternal();
+            long time = myStopwatch.elapsed(TimeUnit.MILLISECONDS);
             String formattedMessage = MessageFormat.format(message, args);
-            log("[T:" + myName + "] " + formattedMessage + " [" + TimeUnit.MILLISECONDS.convert(time, TimeUnit.NANOSECONDS) + " ms]");
+            log(prepareName("T") + " " + formattedMessage + " [" + time + " ms]");
         }
-    }
-
-    private long tickInternal() {
-        long tick = System.nanoTime();
-        long time;
-        if (myLastTick == 0) {
-            time = tick - myStart;
-        } else {
-            time = tick - myLastTick;
-        }
-        myLastTick = tick;
-        return time;
     }
 
     public void stop() {
         if (isEnabled()) {
-            long time = stopInternal();
-            log("[" + myName + "] stopped [" + TimeUnit.MILLISECONDS.convert(time, TimeUnit.NANOSECONDS) + " ms]");
+            myStopwatch.stop();
+            log(prepareName("S") + " stopped [" + myStopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms]");
         }
-    }
-
-    private long stopInternal() {
-        long time = System.nanoTime() - myStart;
-        myStart = 0;
-        myLastTick = 0;
-        return time;
     }
 
     protected abstract boolean isEnabled();
 
     protected abstract void log(String message);
 
-    public static LogStopwatch debugStopwatch(Logger log, String name) {
-        return new LogStopwatch(log, name) {
-            @Override
-            protected boolean isEnabled() {
-                return LOG.isDebugEnabled();
-            }
+    private static class DebugStopwatch extends LogStopwatch {
 
-            @Override
-            protected void log(String message) {
-                LOG.debug(message);
-            }
-        };
+        protected DebugStopwatch(Logger log, Optional<Supplier<Integer>> sequence, Supplier<String> nameSupplier) {
+            super(log, sequence, nameSupplier);
+        }
+
+        @Override
+        protected boolean isEnabled() {
+            return LOG.isDebugEnabled();
+        }
+
+        @Override
+        protected void log(String message) {
+            LOG.debug(message);
+        }
+    }
+    
+    public static LogStopwatch debugStopwatch(Logger log, Supplier<String> nameSupplier) {
+        return new DebugStopwatch(log, Optional.<Supplier<Integer>>absent(), nameSupplier);
+    }
+    
+    public static LogStopwatch debugStopwatch(Logger log, Supplier<Integer> sequence, Supplier<String> nameSupplier) {
+        return new DebugStopwatch(log, Optional.of(sequence), nameSupplier); 
     }
 }

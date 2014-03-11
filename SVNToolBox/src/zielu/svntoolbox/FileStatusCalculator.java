@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -93,7 +94,7 @@ public class FileStatusCalculator {
     @NotNull
     public FileStatus statusFor(@Nullable Project project, @NotNull VirtualFile vFile) {
         if (project == null) {
-            return new FileStatus();
+            return FileStatus.EMPTY;
         }
         SvnVcs svn = SvnVcs.getInstance(project);
         return statusFor(svn, project, vFile);        
@@ -113,7 +114,8 @@ public class FileStatusCalculator {
     }
     
     private Optional<FileStatus> statusForCli(Project project, SVNURL fileUrl, File currentFile) {
-        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, "["+SvnToolBoxProject.getInstance(project).sequence().incrementAndGet()+"] Status For Cli").start();
+        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, SvnToolBoxProject.getInstance(project).sequence(),
+                Suppliers.ofInstance("Status For Cli")).start();
         Optional<VirtualFile> root = getWCRoot(currentFile);
         watch.tick("WC Root");
         if (root.isPresent()) {
@@ -166,6 +168,6 @@ public class FileStatusCalculator {
                 return new FileStatus(fileUrl);
             }
         }
-        return new FileStatus();
+        return FileStatus.EMPTY;
     }
 }

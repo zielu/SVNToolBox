@@ -3,8 +3,7 @@
  */
 package zielu.svntoolbox;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.google.common.base.Supplier;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -13,6 +12,7 @@ import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import org.jetbrains.annotations.NotNull;
 import zielu.svntoolbox.ui.SvnBranchWidget;
+import zielu.svntoolbox.util.IntegerSequenceSupplier;
 
 /**
  * <p></p>
@@ -24,7 +24,7 @@ import zielu.svntoolbox.ui.SvnBranchWidget;
 public class SvnToolBoxProject extends AbstractProjectComponent {
     private final Logger LOG = Logger.getInstance(getClass());
 
-    private final AtomicInteger PV_SEQ = new AtomicInteger();
+    private final Supplier<Integer> PV_SEQ = new IntegerSequenceSupplier();
     
     private SvnBranchWidget myBranchWidget;    
     
@@ -36,8 +36,8 @@ public class SvnToolBoxProject extends AbstractProjectComponent {
         return project.getComponent(SvnToolBoxProject.class);
     }    
     
-    public AtomicInteger sequence() {
-        return PV_SEQ;        
+    public Supplier<Integer> sequence() {
+        return PV_SEQ;
     }
     
     @Override

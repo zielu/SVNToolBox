@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.intellij.openapi.Disposable;
@@ -40,9 +40,9 @@ public class ProjectViewStatusCache implements Disposable {
 
     private final AtomicBoolean myActive = new AtomicBoolean(true);
 
-    private final AtomicInteger SEQ;
+    private final Supplier<Integer> SEQ;
 
-    public ProjectViewStatusCache(AtomicInteger seq) {
+    public ProjectViewStatusCache(Supplier<Integer> seq) {
         SEQ = seq;
     }
 
@@ -63,7 +63,7 @@ public class ProjectViewStatusCache implements Disposable {
         if (myActive.get()) {
             ProjectViewStatus status = getCacheFor(file).get(file);
             if (status != null && LOG.isDebugEnabled()) {
-                LOG.debug("[" + SEQ.incrementAndGet() + "] Found cached status for " + file.getPath() + ", " + getCacheReport() + ", status=" + status);
+                LOG.debug("[" + SEQ.get() + "] Found cached status for " + file.getPath() + ", " + getCacheReport() + ", status=" + status);
             }
             return status;
         }
@@ -89,7 +89,7 @@ public class ProjectViewStatusCache implements Disposable {
             }
             ProjectViewStatus oldStatus = getCacheFor(file).put(file, candidate);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("[" + SEQ.incrementAndGet() + "] Cached candidate for " + file.getPath() +
+                LOG.debug("[" + SEQ.get() + "] Cached candidate for " + file.getPath() +
                         ", cacheAfter=[" + getCacheReport() + "], new=" + candidate + ", previous=" + oldStatus);
             }
             return new PutResult(candidate, oldStatus);
@@ -160,7 +160,7 @@ public class ProjectViewStatusCache implements Disposable {
         ProjectViewStatus oldStatus = cache.remove(vFile);
         boolean result = oldStatus != null;
         if (result && LOG.isDebugEnabled()) {
-            LOG.debug("[" + SEQ.incrementAndGet() + "] Evicted status for " + vFile.getPath() + ", sizeAfter=[" + getCacheReport() + "], evicted=" + oldStatus);
+            LOG.debug("[" + SEQ.get() + "] Evicted status for " + vFile.getPath() + ", sizeAfter=[" + getCacheReport() + "], evicted=" + oldStatus);
         }
         return result;
     }
@@ -217,7 +217,7 @@ public class ProjectViewStatusCache implements Disposable {
                 }
             }
             if (LOG.isDebugEnabled()) {
-                LOG.debug("[" + SEQ.incrementAndGet() + "] Evicted bulk, totalCount=" + evictedCount + ", sizeAfter=[" + getCacheReport() + "]");
+                LOG.debug("[" + SEQ.get() + "] Evicted bulk, totalCount=" + evictedCount + ", sizeAfter=[" + getCacheReport() + "]");
             }
             return result;
         }
@@ -228,7 +228,7 @@ public class ProjectViewStatusCache implements Disposable {
         int size = cache.size();
         cache.clear();
         if (LOG.isDebugEnabled()) {
-            LOG.debug("[" + SEQ.incrementAndGet() + "] " + name + " cache disposed, had " + size + " entries");
+            LOG.debug("[" + SEQ.get() + "] " + name + " cache disposed, had " + size + " entries");
         }
     }
 

@@ -6,8 +6,8 @@ package zielu.svntoolbox.projectView;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.Sets;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.openapi.application.ApplicationManager;
@@ -47,7 +47,7 @@ public class ProjectViewManager extends AbstractProjectComponent {
     private MessageBusConnection myConnection;
     private VirtualFileListener myVfListener;
     
-    private AtomicInteger PV_SEQ;
+    private Supplier<Integer> PV_SEQ;
     
     public ProjectViewManager(Project project) {
         super(project);        
@@ -70,7 +70,7 @@ public class ProjectViewManager extends AbstractProjectComponent {
                         if (myActive.get()) {
                             final ProjectView projectView = ProjectView.getInstance(project);
                             if (LOG.isDebugEnabled()) {
-                                LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Refreshing Project View");
+                                LOG.debug("[" + PV_SEQ.get() + "] Refreshing Project View");
                             }
                             projectView.refresh();
                         }
@@ -79,7 +79,7 @@ public class ProjectViewManager extends AbstractProjectComponent {
             }
         } else {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Project View refresh ignored - decorations disabled");
+                LOG.debug("[" + PV_SEQ.get() + "] Project View refresh ignored - decorations disabled");
             }
         }
     }
@@ -117,7 +117,7 @@ public class ProjectViewManager extends AbstractProjectComponent {
                 public void consume(Set<String> paths) {
                     final Set<String> localPaths = Sets.newLinkedHashSet(paths);
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Updated paths: " + localPaths);
+                        LOG.debug("[" + PV_SEQ.get() + "] Updated paths: " + localPaths);
                     }
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
@@ -128,7 +128,7 @@ public class ProjectViewManager extends AbstractProjectComponent {
                             boolean somethingUnderSvn = vFilesUnderSvn.size() > 0;
                             if (somethingEvicted || somethingUnderSvn) {
                                 if (LOG.isDebugEnabled()) {
-                                    LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Requesting project view refresh: somethingEvicted=" + somethingEvicted + ", somethingUnderSvn=" + somethingUnderSvn);
+                                    LOG.debug("[" + PV_SEQ.get() + "] Requesting project view refresh: somethingEvicted=" + somethingEvicted + ", somethingUnderSvn=" + somethingUnderSvn);
                                 }
                                 refreshProjectView(myProject);
                             }
@@ -141,7 +141,7 @@ public class ProjectViewManager extends AbstractProjectComponent {
                 @Override
                 public void beforeFileDeletion(VirtualFileEvent event) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Before deletion: " + event);
+                        LOG.debug("[" + PV_SEQ.get() + "] Before deletion: " + event);
                     }
                     myStatusCache.evict(event.getFile());
                 }
@@ -149,7 +149,7 @@ public class ProjectViewManager extends AbstractProjectComponent {
                 @Override
                 public void beforeFileMovement(VirtualFileMoveEvent event) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("[" + PV_SEQ.incrementAndGet() + "] Before move: " + event);
+                        LOG.debug("[" + PV_SEQ.get() + "] Before move: " + event);
                     }
                     myStatusCache.evict(event.getFile());
                 }
