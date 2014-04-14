@@ -251,6 +251,12 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
         return false;
     }
 
+    private void updateStatusBar() {
+        if (myStatusBar != null) {
+            myStatusBar.updateWidget(ID());
+        }
+    }
+    
     private void updateUi(final Optional<UpdateResult> maybeResult, final boolean maybeOpenBranchConfig) {
         if (maybeResult.isPresent()) {
             ApplicationManager.getApplication().invokeLater(new Runnable() {
@@ -270,7 +276,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
                             updated.compareAndSet(false, empty());
                         }
                         if (updated.get()) {
-                            myStatusBar.updateWidget(ID());
+                            updateStatusBar();
                         }
                         watch.stop();
                         if (maybeOpenBranchConfig && maybeResult.isPresent()) {
