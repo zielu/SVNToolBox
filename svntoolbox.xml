@@ -12,7 +12,7 @@
   
   <property name="compiler.debug" value="on"/>
   <property name="compiler.generate.no.warnings" value="off"/>
-  <property name="compiler.args" value=""/>
+  <property name="compiler.args" value="-source 1.6 -target 1.6"/>
   <property name="compiler.max.memory" value="128m"/>
   <patternset id="ignored.files">
     <exclude name="**/CVS/**"/>
@@ -58,13 +58,11 @@
   
   <!-- JDK definitions -->
   
-  <property name="jdk.bin.idea_ic-13.x" value="${jdk.home.idea_ic-13.x}/../../Java/${jdk.version}/bin"/>
-  
-  <property name="project.jdk.home" value="${jdk.home.idea_ic-13.x}"/>
-  <property name="project.jdk.bin" value="${jdk.bin.idea_ic-13.x}"/>
+  <property name="project.jdk.home" value="${jdk.home}"/>
+  <property name="project.jdk.bin" value="${jdk.home}/bin"/>
   
   <path id="jdk.classpath.idea_ic-13.x">
-    <fileset dir="${jdk.home.idea_ic-13.x}">
+    <fileset dir="${idea.home}">
       <include name="lib/annotations.jar"/>
       <include name="lib/asm-commons.jar"/>
       <include name="lib/asm.jar"/>

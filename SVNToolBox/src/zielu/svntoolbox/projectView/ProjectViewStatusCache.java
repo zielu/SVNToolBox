@@ -3,6 +3,12 @@
  */
 package zielu.svntoolbox.projectView;
 
+import com.google.common.base.Supplier;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.intellij.openapi.Disposable;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.vfs.VirtualFile;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -10,13 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.google.common.base.Supplier;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.intellij.openapi.Disposable;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -35,8 +34,8 @@ public class ProjectViewStatusCache implements Disposable {
 
     //TODO: maybe use ConcurrentSkipListMap ?? if so remember that current size must be maintained externally
     //see class docs for explanation 
-    private final Map<VirtualFile, ProjectViewStatus> myDirBranchesCache = new ConcurrentHashMap<VirtualFile, ProjectViewStatus>();
-    private final Map<VirtualFile, ProjectViewStatus> myFileBranchesCache = new ConcurrentHashMap<VirtualFile, ProjectViewStatus>();
+    private final Map<String, ProjectViewStatus> myDirBranchesCache = new ConcurrentHashMap<String, ProjectViewStatus>();
+    private final Map<String, ProjectViewStatus> myFileBranchesCache = new ConcurrentHashMap<String, ProjectViewStatus>();
 
     private final AtomicBoolean myActive = new AtomicBoolean(true);
 
@@ -46,7 +45,12 @@ public class ProjectViewStatusCache implements Disposable {
         SEQ = seq;
     }
 
-    private Map<VirtualFile, ProjectViewStatus> getCacheFor(VirtualFile vFile) {
+    @Nullable
+    private String getKeyFor(@Nullable VirtualFile vFile) {
+        return vFile != null ? vFile.getPath() : null;
+    }
+    
+    private Map<String, ProjectViewStatus> getCacheFor(VirtualFile vFile) {
         if (vFile.isDirectory()) {
             return myDirBranchesCache;
         } else {
@@ -61,7 +65,7 @@ public class ProjectViewStatusCache implements Disposable {
     @Nullable
     public ProjectViewStatus get(VirtualFile file) {
         if (myActive.get()) {
-            ProjectViewStatus status = getCacheFor(file).get(file);
+            ProjectViewStatus status = getCacheFor(file).get(getKeyFor(file));
             if (status != null && LOG.isDebugEnabled()) {
                 LOG.debug("[" + SEQ.get() + "] Found cached status for " + file.getPath() + ", " + getCacheReport() + ", status=" + status);
             }
@@ -87,7 +91,7 @@ public class ProjectViewStatusCache implements Disposable {
                 //net result is that annotations are shown only for switched roots and not their children
                 candidate = ProjectViewStatus.EMPTY;
             }
-            ProjectViewStatus oldStatus = getCacheFor(file).put(file, candidate);
+            ProjectViewStatus oldStatus = getCacheFor(file).put(getKeyFor(file), candidate);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("[" + SEQ.get() + "] Cached candidate for " + file.getPath() +
                         ", cacheAfter=[" + getCacheReport() + "], new=" + candidate + ", previous=" + oldStatus);
@@ -100,7 +104,7 @@ public class ProjectViewStatusCache implements Disposable {
     private boolean isFirstNotEmptyParentStatusEqualTo(VirtualFile vFile, ProjectViewStatus toCheck) {
         for (VirtualFile current = vFile.getParent(); current != null; current = current.getParent()) {
             //look only in dir cache as parents for dirs and files will always be dirs
-            ProjectViewStatus status = myDirBranchesCache.get(current);
+            ProjectViewStatus status = myDirBranchesCache.get(getKeyFor(current));
             if (status != null) {
                 if (!status.isEmpty()) {
                     if (status.isTemporary()) {
@@ -126,27 +130,27 @@ public class ProjectViewStatusCache implements Disposable {
         if (parent.isDirectory()) {
             String parentPath = parent.getPath();
             //evict files in all subdirectories
-            Set<VirtualFile> toEvict = Sets.newHashSetWithExpectedSize(myFileBranchesCache.size());
-            for (VirtualFile vFile : myFileBranchesCache.keySet()) {
-                if (vFile.getPath().startsWith(parentPath)) {
-                    toEvict.add(vFile);
+            Set<String> toEvict = Sets.newHashSetWithExpectedSize(myFileBranchesCache.size());
+            for (String path : myFileBranchesCache.keySet()) {
+                if (path.startsWith(parentPath)) {
+                    toEvict.add(path);
                 }
             }
             int evictedCount = 0;
-            for (VirtualFile vFile : toEvict) {
-                if (evictFile(vFile)) {
+            for (String path : toEvict) {
+                if (evictPath(path)) {
                     evictedCount++;
                 }
             }
             //evict all subdirectories
             toEvict = Sets.newHashSetWithExpectedSize(myDirBranchesCache.size());
-            for (VirtualFile vDir : myDirBranchesCache.keySet()) {
-                if (vDir.getPath().startsWith(parentPath)) {
-                    toEvict.add(vDir);
+            for (String path : myDirBranchesCache.keySet()) {
+                if (path.startsWith(parentPath)) {
+                    toEvict.add(path);
                 }
             }
-            for (VirtualFile vFile : toEvict) {
-                if (evictFile(vFile)) {
+            for (String path : toEvict) {
+                if (evictPath(path)) {
                     evictedCount++;
                 }
             }
@@ -155,12 +159,14 @@ public class ProjectViewStatusCache implements Disposable {
         return 0;
     }
 
-    private boolean evictFile(VirtualFile vFile) {
-        Map<VirtualFile, ProjectViewStatus> cache = getCacheFor(vFile);
-        ProjectViewStatus oldStatus = cache.remove(vFile);
+    private boolean evictPath(String filePath) {
+        ProjectViewStatus oldStatus = myDirBranchesCache.remove(filePath);
+        if (oldStatus == null) {
+            oldStatus = myFileBranchesCache.remove(filePath);
+        }
         boolean result = oldStatus != null;
         if (result && LOG.isDebugEnabled()) {
-            LOG.debug("[" + SEQ.get() + "] Evicted status for " + vFile.getPath() + ", sizeAfter=[" + getCacheReport() + "], evicted=" + oldStatus);
+            LOG.debug("[" + SEQ.get() + "] Evicted status for " + filePath + ", sizeAfter=[" + getCacheReport() + "], evicted=" + oldStatus);
         }
         return result;
     }
@@ -173,7 +179,7 @@ public class ProjectViewStatusCache implements Disposable {
      */
     public boolean evict(VirtualFile file) {
         if (myActive.get()) {
-            return evictFile(file);
+            return evictPath(getKeyFor(file));
         }
         return false;
     }
@@ -224,7 +230,7 @@ public class ProjectViewStatusCache implements Disposable {
         return false;
     }
 
-    private void disposeCache(String name, Map<VirtualFile, ProjectViewStatus> cache) {
+    private void disposeCache(String name, Map<?, ?> cache) {
         int size = cache.size();
         cache.clear();
         if (LOG.isDebugEnabled()) {

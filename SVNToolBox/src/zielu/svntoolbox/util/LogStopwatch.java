@@ -22,7 +22,7 @@ public abstract class LogStopwatch {
     protected final Logger LOG;
     private final Supplier<String> myNameSupplier;
     private final Optional<Supplier<Integer>> mySequence;
-    private final Stopwatch myStopwatch = new Stopwatch();
+    private final Stopwatch myStopwatch = Stopwatch.createUnstarted();
     
     private String myName;
     

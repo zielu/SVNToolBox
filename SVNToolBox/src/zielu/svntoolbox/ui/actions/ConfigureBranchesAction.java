@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.svn.SvnBundle;
-import org.jetbrains.idea.svn.dialogs.BranchConfigurationDialog;
+import org.jetbrains.idea.svn.branchConfig.BranchConfigurationDialog;
 
 /**
  * <p></p>

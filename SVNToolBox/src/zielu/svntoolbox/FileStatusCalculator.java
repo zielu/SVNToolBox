@@ -3,10 +3,6 @@
  */
 package zielu.svntoolbox;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-
 import com.google.common.base.Optional;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
@@ -16,16 +12,19 @@ import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.svn.SvnBranchConfigurationManager;
 import org.jetbrains.idea.svn.SvnConfiguration;
 import org.jetbrains.idea.svn.SvnStatusUtil;
 import org.jetbrains.idea.svn.SvnUtil;
 import org.jetbrains.idea.svn.SvnVcs;
+import org.jetbrains.idea.svn.branchConfig.SvnBranchConfigurationManager;
 import org.jetbrains.idea.svn.branchConfig.SvnBranchConfigurationNew;
+import org.jetbrains.idea.svn.info.Info;
 import org.tmatesoft.svn.core.SVNURL;
-import org.tmatesoft.svn.core.wc.SVNInfo;
 import zielu.svntoolbox.util.LogStopwatch;
 
 /**
@@ -138,7 +137,7 @@ public class FileStatusCalculator {
         return Optional.absent();
     }
     
-    private Optional<FileStatus> statusForSvnKit(SVNInfo info, SvnVcs svn, SVNURL fileUrl, File currentFile) {
+    private Optional<FileStatus> statusForSvnKit(Info info, SvnVcs svn, SVNURL fileUrl, File currentFile) {
         Optional<VirtualFile> root = getWCRoot(currentFile);
         if (root.isPresent()) {
             SVNURL branch = SvnUtil.getBranchForUrl(svn, root.get(), fileUrl.toString());
@@ -152,7 +151,7 @@ public class FileStatusCalculator {
         File currentFile = VfsUtilCore.virtualToIoFile(vFile);
         SVNURL fileUrl = SvnUtil.getUrl(svn, currentFile);
         if (fileUrl != null) {
-            SVNInfo info = svn.getInfo(vFile);
+            Info info = svn.getInfo(vFile);
             if (info != null) {
                 SvnConfiguration svnConfig = SvnConfiguration.getInstance(project);
                 Optional<FileStatus> status;
