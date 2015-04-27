@@ -37,11 +37,11 @@
         <properties/>
         <border type="etched" title-resource-bundle="zielu/svntoolbox/SvnToolBoxBundle" title-key="configurable.app.projectViewDecoration.text"/>
         <children>
-          <component id="f1344" class="javax.swing.JFileChooser" binding="csvFileChooser" default-binding="true">
+          <component id="f1344" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="csvFileChooser" default-binding="true">
             <constraints border-constraint="Center"/>
             <properties>
-              <acceptAllFileFilterUsed value="true"/>
-              <controlButtonsAreShown value="false"/>
+              <editable value="true"/>
+              <enabled value="true"/>
             </properties>
           </component>
           <component id="f077" class="javax.swing.JLabel">

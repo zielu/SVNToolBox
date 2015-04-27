@@ -3,8 +3,11 @@
  */
 package zielu.svntoolbox.ui.config;
 
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 import zielu.svntoolbox.SvnToolBoxBundle;
@@ -21,6 +24,7 @@ import javax.swing.JComponent;
  */
 public class SvnToolBoxConfigurable extends BaseConfigurable {
     private SvnToolBoxForm form;
+    private Project project;
 
     @Nls
     @Override
@@ -47,6 +51,12 @@ public class SvnToolBoxConfigurable extends BaseConfigurable {
         SvnToolBoxAppState state = SvnToolBoxAppState.getInstance();
         form.setRegularColorState(state.customRegularColor, state.getRegularDecorationColor());
         form.setDarkColorState(state.customDarkColor, state.getDarkDecorationColor());
+
+        form.getCsvFile().addBrowseFolderListener("",
+                "",
+                ProjectManager.getInstance().getDefaultProject(),
+                FileChooserDescriptorFactory.createSingleFileDescriptor("csv"));
+
         return form.getContent();
     }
 
@@ -56,6 +66,12 @@ public class SvnToolBoxConfigurable extends BaseConfigurable {
         SvnToolBoxAppState state = SvnToolBoxAppState.getInstance();
 
         boolean changed = false;
+
+        if(!state.getCsvFile().equalsIgnoreCase(form.getCsvFile().getText())){
+            state.setCsvFile(form.getCsvFile().getText());
+            changed = true;
+        }
+
         if (state.checkRegularDecorationChanged(form.isRegularColorEnabled(), form.getRegularColor())) {
             state.setRegularDecorationColor(form.isRegularColorEnabled(), form.getRegularColor());
             changed = true;
@@ -74,6 +90,10 @@ public class SvnToolBoxConfigurable extends BaseConfigurable {
     public boolean isModified() {
         boolean modified = false;
         SvnToolBoxAppState state = SvnToolBoxAppState.getInstance();
+
+        if(!state.getCsvFile().equalsIgnoreCase(form.getCsvFile().getText())){
+            modified = true;
+        }
         if (state.checkRegularDecorationChanged(form.isRegularColorEnabled(), form.getRegularColor())) {
             modified = true;
         }
@@ -87,6 +107,8 @@ public class SvnToolBoxConfigurable extends BaseConfigurable {
     public void reset() {
         initComponent();
         SvnToolBoxAppState state = SvnToolBoxAppState.getInstance();
+
+        form.getCsvFile().setText(state.getCsvFile());
         form.setRegularColorState(state.customRegularColor, state.getRegularDecorationColor());
         form.setDarkColorState(state.customDarkColor, state.getDarkDecorationColor());
     }
