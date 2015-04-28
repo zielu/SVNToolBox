@@ -15,6 +15,7 @@ import org.jetbrains.idea.svn.commandLine.SvnBindException;
 import org.jetbrains.idea.svn.info.Info;
 import org.jetbrains.idea.svn.lock.Lock;
 import org.tmatesoft.svn.core.wc.SVNRevision;
+import zielu.svntoolbox.config.SvnToolBoxAppState;
 
 import javax.swing.*;
 import java.awt.datatransfer.StringSelection;
@@ -63,7 +64,7 @@ public class ShowLockInfoAction extends VirtualFileUnderSvnActionBase {
 
             Lock lock = urlInfo.getLock();
             if(lock != null) {
-                datas.add(getString("configurable.app.svnlock.owner.label") + FIELD_DELIMITER + lock.getOwner());
+                datas.add(getString("configurable.app.svnlock.owner.label") + FIELD_DELIMITER + getOwnerCSVDetail(lock.getOwner()));
                 datas.add(getString("configurable.app.svnlock.comment.label") + FIELD_DELIMITER + lock.getComment());
                 datas.add(getString("configurable.app.svnlock.creation.label") + FIELD_DELIMITER + (lock.getCreationDate() != null ? lock.getCreationDate() : EMPTY));
                 datas.add(getString("configurable.app.svnlock.expiration.label") + FIELD_DELIMITER + (lock.getExpirationDate() != null ? lock.getExpirationDate() : EMPTY));
@@ -95,26 +96,27 @@ public class ShowLockInfoAction extends VirtualFileUnderSvnActionBase {
         }
     }
 
-    private String run(String owner) {
+    private String getOwnerCSVDetail(String owner) {
+        if(Strings.isBlank(owner))
+            return EMPTY;
 
-        String csvFile = "/Users/mkyong/Downloads/GeoIPCountryWhois.csv";
+        String csvFile = SvnToolBoxAppState.getInstance().getCsvFile();
+        if(Strings.isBlank(csvFile))
+            return owner;
+
         BufferedReader br = null;
-        String line = "";
-        String cvsSplitBy = ";";
-
         try {
-
             br = new BufferedReader(new FileReader(csvFile));
+            String line;
             while ((line = br.readLine()) != null) {
 
                 // use comma as separator
-                String[] users = line.split(cvsSplitBy);
+                String[] users = line.split(";");
 
                 if(owner.equalsIgnoreCase(users[0])) {
-                    return "[" + users[0] + "] " + users[1];
+                    return users[0] + " - " + users[1];
                 }
             }
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -128,7 +130,8 @@ public class ShowLockInfoAction extends VirtualFileUnderSvnActionBase {
                 }
             }
         }
-        return "";
+
+        return owner;
     }
 
 }

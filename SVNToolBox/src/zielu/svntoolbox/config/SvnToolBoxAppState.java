@@ -3,6 +3,7 @@
  */
 package zielu.svntoolbox.config;
 
+import com.google.common.base.Strings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
@@ -60,12 +61,13 @@ public class SvnToolBoxAppState implements PersistentStateComponent<SvnToolBoxAp
     }
 
     public String getCsvFile() {
-        return fileCsv;
+        return Strings.nullToEmpty(fileCsv);
     }
 
     public void setCsvFile(String fileCsv) {
         this.fileCsv = fileCsv;
     }
+
     @Transient
     public Color getCurrentRegularDecorationColor() {
         if (customRegularColor) {
