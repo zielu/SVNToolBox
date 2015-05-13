@@ -45,6 +45,8 @@ public class SvnToolBoxAppState implements PersistentStateComponent<SvnToolBoxAp
     public int darkG = 107;
     public int darkB = 0;
 
+    private String fileCsv;
+
     @Transient
     private static final Color defaultRegularColor = new Color(159, 107, 0);
 
@@ -57,6 +59,13 @@ public class SvnToolBoxAppState implements PersistentStateComponent<SvnToolBoxAp
         return ApplicationManager.getApplication().getComponent(SvnToolBoxAppState.class);
     }
 
+    public String getCsvFile() {
+        return fileCsv;
+    }
+
+    public void setCsvFile(String fileCsv) {
+        this.fileCsv = fileCsv;
+    }
     @Transient
     public Color getCurrentRegularDecorationColor() {
         if (customRegularColor) {

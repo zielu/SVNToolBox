@@ -128,7 +128,7 @@ public class FileStatusCalculator {
                 watch.tick("Base Name");
                 watch.stop();
                 return Optional.of(new FileStatus(fileUrl, baseName));
-            } catch (VcsException e) {
+            } catch (Exception e) {
                 LOG.error("Could not get branch configuration", e);
             }            
         } else {

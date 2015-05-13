@@ -3,11 +3,11 @@
  */
 package zielu.svntoolbox.ui.config;
 
+import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.CheckBoxWithColorChooser;
 import zielu.svntoolbox.SvnToolBoxBundle;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.Color;
 
 /**
@@ -21,6 +21,7 @@ public class SvnToolBoxForm {
     private JPanel content;
     private CheckBoxWithColorChooser regularColorChooser;
     private CheckBoxWithColorChooser darkColorChooser;
+    private TextFieldWithBrowseButton csvFileChooser;
 
     public JComponent getContent() {
         return content;
@@ -29,6 +30,15 @@ public class SvnToolBoxForm {
     protected void createUIComponents() {
         regularColorChooser = new CheckBoxWithColorChooser(SvnToolBoxBundle.getString("configurable.app.regularColor.text"));
         darkColorChooser = new CheckBoxWithColorChooser(SvnToolBoxBundle.getString("configurable.app.darkColor.text"));
+        csvFileChooser = new TextFieldWithBrowseButton();
+    }
+
+    public TextFieldWithBrowseButton getCsvFile() {
+        return csvFileChooser;
+    }
+
+    public void setCsvFile(TextFieldWithBrowseButton csvFileChooser) {
+        this.csvFileChooser = csvFileChooser;
     }
 
     public boolean isRegularColorEnabled() {

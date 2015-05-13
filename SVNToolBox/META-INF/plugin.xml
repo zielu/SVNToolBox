@@ -97,6 +97,10 @@
             text="Copy URL">
       <add-to-group group-id="SubversionFilePopupGroup" anchor="last" />
     </action>
+    <action id="SvnToolBox.showLockInfo" class="zielu.svntoolbox.ui.actions.ShowLockInfoAction" text="Show Lock Info...">
+      <add-to-group group-id="SubversionFilePopupGroup" anchor="last" />
+      <keyboard-shortcut keymap="$default" first-keystroke="ctrl I"/>
+    </action>
   </actions>
 
   <extensionPoints>
