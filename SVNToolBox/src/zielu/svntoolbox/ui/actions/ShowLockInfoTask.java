@@ -95,6 +95,7 @@ public class ShowLockInfoTask extends FileBackgroundable {
             indicator.setText(getString("configurable.app.svnlock.noinfo.get.url.info") + fileInfo.getURL());
             Info urlInfo = svn.getInfo(fileInfo.getURL(), SVNRevision.UNDEFINED);
             if (urlInfo == null) {
+                indicator.stop();
                 return;
             }
 
