@@ -1,12 +1,12 @@
 <idea-plugin version="2" url="https://github.com/zielu/SVNToolBox">
   <id>zielu.svntoolbox</id>
   <name>SVNToolBox</name>
-  <version>13.0.7</version>
-  <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor> 
+  <version>13.1.0</version>
+  <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
   <depends>com.intellij.modules.platform</depends>
   <depends>Subversion</depends>
   <depends optional="true" config-file="java-features.xml">com.intellij.modules.java</depends>
-  
+
   <description><![CDATA[
     <h2>Enriches SVN integration</h2>
     Following functionality was added:
@@ -29,6 +29,7 @@
         <ul>
           <li>'Configure branches' extracted from 'Update' dialog as item</li>
           <li>'Copy URL' to clipboard action</li>
+          <li>'Show Lock Info' for current selection</li>
         </ul>
       </li>
     </ul>
@@ -36,12 +37,12 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes is 13.0.7</h3>
+      <h3>Changes is 13.1.0</h3>
       <ul>
-        <li>Compatible with 138.x</li>
-      </ul>      
+        <li>Added 'Show Lock Info...' action - contribution by ABONO</li>
+      </ul>
       <h3>Changes is 13.0.6</h3>
-      <ul>        
+      <ul>
         <li>Compatible with Idea 13.1</li>
       </ul>
       ]]>
@@ -70,7 +71,7 @@
       <implementation-class>zielu.svntoolbox.SvnToolBoxProject</implementation-class>
     </component>
     <component>
-      <implementation-class>zielu.svntoolbox.projectView.ProjectViewManager</implementation-class>  
+      <implementation-class>zielu.svntoolbox.projectView.ProjectViewManager</implementation-class>
     </component>
     <component>
       <implementation-class>zielu.svntoolbox.async.AsyncFileStatusCalculator</implementation-class>
@@ -108,11 +109,11 @@
       <with attribute="implementationClass" implements="zielu.svntoolbox.ui.projectView.NodeDecoration" />
     </extensionPoint>
   </extensionPoints>
-  
+
   <extensions defaultExtensionNs="com.intellij">
     <projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator" />
     <projectService serviceImplementation="zielu.svntoolbox.config.SvnToolBoxProjectState" />
-      
+
     <applicationConfigurable instance="zielu.svntoolbox.ui.config.SvnToolBoxConfigurable" id="zielu.svntoolbox.app.config" />
     <!-- Add your extensions here -->
   </extensions>
