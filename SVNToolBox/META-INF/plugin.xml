@@ -64,6 +64,9 @@
     <component>
      <implementation-class>zielu.svntoolbox.config.SvnToolBoxAppState</implementation-class>
     </component>
+    <component>
+      <implementation-class>zielu.svntoolbox.lockinfo.SvnLockOwnerComponent</implementation-class>
+    </component>
   </application-components>
 
   <project-components>

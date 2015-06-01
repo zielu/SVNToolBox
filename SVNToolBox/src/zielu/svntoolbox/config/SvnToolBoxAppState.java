@@ -1,8 +1,9 @@
-/* 
+/*
  * @(#) $Id:  $
  */
 package zielu.svntoolbox.config;
 
+import com.google.common.base.Strings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
@@ -12,11 +13,10 @@ import com.intellij.openapi.components.StoragePathMacros;
 import com.intellij.ui.JBColor;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
+import java.awt.Color;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import zielu.svntoolbox.projectView.DecorationSettingsNotifier;
-
-import java.awt.Color;
 
 /**
  * <p></p>
@@ -60,7 +60,7 @@ public class SvnToolBoxAppState implements PersistentStateComponent<SvnToolBoxAp
     }
 
     public String getCsvFile() {
-        return fileCsv;
+        return Strings.nullToEmpty(fileCsv);
     }
 
     public void setCsvFile(String fileCsv) {
