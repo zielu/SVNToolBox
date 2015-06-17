@@ -66,6 +66,12 @@ public class SvnToolBoxAppState implements PersistentStateComponent<SvnToolBoxAp
     public void setCsvFile(String fileCsv) {
         this.fileCsv = fileCsv;
     }
+
+    public boolean checkCsvFileChanged(String csvFile) {
+        String currentValue = getCsvFile();
+        return !currentValue.equalsIgnoreCase(csvFile);
+    }
+
     @Transient
     public Color getCurrentRegularDecorationColor() {
         if (customRegularColor) {

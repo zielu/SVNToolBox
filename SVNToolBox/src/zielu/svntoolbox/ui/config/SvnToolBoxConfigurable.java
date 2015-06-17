@@ -1,4 +1,4 @@
-/* 
+/*
  * @(#) $Id:  $
  */
 package zielu.svntoolbox.ui.config;
@@ -8,12 +8,11 @@ import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import javax.swing.JComponent;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 import zielu.svntoolbox.SvnToolBoxBundle;
 import zielu.svntoolbox.config.SvnToolBoxAppState;
-
-import javax.swing.JComponent;
 
 /**
  * <p></p>
@@ -23,7 +22,7 @@ import javax.swing.JComponent;
  * @author Lukasz Zielinski
  */
 public class SvnToolBoxConfigurable extends BaseConfigurable {
-    private SvnToolBoxForm form;
+    private volatile SvnToolBoxForm form;
     private Project project;
 
     @Nls
@@ -38,7 +37,7 @@ public class SvnToolBoxConfigurable extends BaseConfigurable {
         return null;  //TODO: auto-generated method implementation
     }
 
-    private void initComponent() {
+    private synchronized void initComponent() {
         if (form == null) {
             form = new SvnToolBoxForm();
         }
@@ -63,6 +62,7 @@ public class SvnToolBoxConfigurable extends BaseConfigurable {
     @Override
     public void apply() throws ConfigurationException {
         initComponent();
+
         SvnToolBoxAppState state = SvnToolBoxAppState.getInstance();
 
         boolean changed = false;
@@ -91,7 +91,7 @@ public class SvnToolBoxConfigurable extends BaseConfigurable {
         boolean modified = false;
         SvnToolBoxAppState state = SvnToolBoxAppState.getInstance();
 
-        if(!state.getCsvFile().equalsIgnoreCase(form.getCsvFile().getText())){
+        if (state.checkCsvFileChanged(form.getCsvFile().getText())) {
             modified = true;
         }
         if (state.checkRegularDecorationChanged(form.isRegularColorEnabled(), form.getRegularColor())) {
