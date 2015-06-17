@@ -5,6 +5,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.jgoodies.common.base.Strings;
@@ -28,7 +29,9 @@ public class SvnLockOwnerComponent implements ApplicationComponent {
     private final Map<String, String> ownerMapping = Maps.newHashMap();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    private long lastModifiedDate;
+    public static SvnLockOwnerComponent getInstance() {
+        return ApplicationManager.getApplication().getComponent(SvnLockOwnerComponent.class);
+    }
 
     @Override
     public void initComponent() {
@@ -41,7 +44,9 @@ public class SvnLockOwnerComponent implements ApplicationComponent {
             BufferedReader reader = closer.register(Files.newBufferedReader(csvFile.toPath(), Charsets.UTF_8));
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 List<String> columns = semicolon.splitToList(line);
-                mappings.put(columns.get(0).toLowerCase(), columns.get(1));
+                if (columns.size() > 1) {
+                    mappings.put(columns.get(0).toLowerCase(), columns.get(1));
+                }
             }
             return mappings;
         } catch (IOException e) {
@@ -57,16 +62,12 @@ public class SvnLockOwnerComponent implements ApplicationComponent {
     }
 
     private Optional<String> loadFromMappings(String owner, String csvFile) {
-        lock.writeLock();
+        lock.writeLock().lock();
         File file = new File(csvFile);
         if (file.exists()) {
-            long currentLastModified = file.lastModified();
-            if (lastModifiedDate < currentLastModified) {
-                Map<String, String> mappings = loadFile(file);
-                ownerMapping.clear();
-                ownerMapping.putAll(mappings);
-                lastModifiedDate = currentLastModified;
-            }
+            Map<String, String> mappings = loadFile(file);
+            ownerMapping.clear();
+            ownerMapping.putAll(mappings);
             lock.readLock().lock();
             lock.writeLock().unlock();
             try {
@@ -76,7 +77,6 @@ public class SvnLockOwnerComponent implements ApplicationComponent {
             }
         } else if (ownerMapping.size() > 0) {
             ownerMapping.clear();
-            lastModifiedDate = 0;
         }
         lock.writeLock().unlock();
         return Optional.absent();
@@ -105,7 +105,6 @@ public class SvnLockOwnerComponent implements ApplicationComponent {
         lock.writeLock().lock();
         try {
             ownerMapping.clear();
-            lastModifiedDate = 0;
         } finally {
             lock.writeLock().unlock();
         }

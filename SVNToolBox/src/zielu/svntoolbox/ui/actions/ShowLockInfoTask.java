@@ -18,10 +18,6 @@ import com.intellij.ui.components.JBList;
 import com.intellij.util.ui.UIUtil;
 import com.jgoodies.common.base.Strings;
 import java.awt.datatransfer.StringSelection;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JList;
@@ -33,6 +29,7 @@ import org.jetbrains.idea.svn.lock.Lock;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import zielu.svntoolbox.SvnToolBoxApp;
 import zielu.svntoolbox.SvnToolBoxBundle;
+import zielu.svntoolbox.lockinfo.SvnLockOwnerComponent;
 import zielu.svntoolbox.util.FileBackgroundable;
 
 /**
@@ -103,7 +100,8 @@ public class ShowLockInfoTask extends FileBackgroundable {
             indicator.setText(getString("configurable.app.svnlock.noinfo.get.lock.info") + fileInfo.getURL());
             Lock lock = urlInfo.getLock();
             if (lock != null) {
-                datas.add(getString("configurable.app.svnlock.owner.label") + FIELD_DELIMITER + lock.getOwner());
+                String owner = SvnLockOwnerComponent.getInstance().getOwner(lock.getOwner());
+                datas.add(getString("configurable.app.svnlock.owner.label") + FIELD_DELIMITER + owner);
                 datas.add(getString("configurable.app.svnlock.comment.label") + FIELD_DELIMITER + lock.getComment());
                 datas.add(getString("configurable.app.svnlock.creation.label") + FIELD_DELIMITER + (lock.getCreationDate() != null ? lock.getCreationDate() : EMPTY));
                 datas.add(getString("configurable.app.svnlock.expiration.label") + FIELD_DELIMITER + (lock.getExpirationDate() != null ? lock.getExpirationDate() : EMPTY));
@@ -134,42 +132,6 @@ public class ShowLockInfoTask extends FileBackgroundable {
             indicator.stop();
             LOG.warn("Could not get info for " + getFile(), sbe);
         }
-    }
-
-    private String run(String owner) {
-
-        String csvFile = "/Users/mkyong/Downloads/GeoIPCountryWhois.csv";
-        BufferedReader br = null;
-        String line = "";
-        String cvsSplitBy = ";";
-
-        try {
-
-            br = new BufferedReader(new FileReader(csvFile));
-            while ((line = br.readLine()) != null) {
-
-                // use comma as separator
-                String[] users = line.split(cvsSplitBy);
-
-                if (owner.equalsIgnoreCase(users[0])) {
-                    return "[" + users[0] + "] " + users[1];
-                }
-            }
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return "";
     }
 
 }
