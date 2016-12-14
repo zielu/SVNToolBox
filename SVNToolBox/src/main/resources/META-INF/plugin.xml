@@ -1,8 +1,8 @@
-<idea-plugin version="2" url="https://github.com/zielu/SVNToolBox">
+﻿<idea-plugin version="2" url="https://github.com/zielu/SVNToolBox">
   <id>zielu.svntoolbox</id>
   <name>SVNToolBox</name>
   <version>13.1.1</version>
-  <vendor url="https://github.com/zielu/SVNToolBox">Łukasz Zieliński</vendor>
+  <vendor url="https://github.com/zielu/SVNToolBox">Lukasz Zielinski</vendor>
   <depends>com.intellij.modules.platform</depends>
   <depends>Subversion</depends>
   <depends optional="true" config-file="java-features.xml">com.intellij.modules.java</depends>
