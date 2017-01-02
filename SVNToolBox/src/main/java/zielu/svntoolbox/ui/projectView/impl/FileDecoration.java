@@ -18,8 +18,8 @@ import zielu.svntoolbox.projectView.ProjectViewStatus;
  * @author Lukasz Zielinski
  */
 public class FileDecoration extends AbstractNodeDecoration {
-    @Override
-    protected String getName(ProjectViewNode node) {
+
+    private String getName(ProjectViewNode node) {
         PsiFileNode fileNode = (PsiFileNode) node;
         return fileNode.getValue().getName();
     }
@@ -34,7 +34,7 @@ public class FileDecoration extends AbstractNodeDecoration {
     protected void applyDecorationUnderSvn(ProjectViewNode node, PresentationData data) {
         ProjectViewStatus status = getBranchStatusAndCache(node);
         if (shouldApplyDecoration(status)) {
-            addSmartText(data, getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+            data.addText(getName(node), SimpleTextAttributes.REGULAR_ATTRIBUTES);
             data.addText(formatBranchName(status));
         }
     }

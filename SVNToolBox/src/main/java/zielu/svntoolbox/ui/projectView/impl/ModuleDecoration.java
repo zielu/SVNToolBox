@@ -27,11 +27,6 @@ public class ModuleDecoration extends AbstractNodeDecoration {
     }
 
     @Override
-    protected String getName(ProjectViewNode node) {
-        return null;
-    }
-
-    @Override
     protected VirtualFile getVirtualFile(ProjectViewNode node) {
         return node.getVirtualFile();
     }
@@ -49,7 +44,7 @@ public class ModuleDecoration extends AbstractNodeDecoration {
         if (node instanceof PsiDirectoryNode) {
             PsiDirectoryNode dirNode = (PsiDirectoryNode) node;
             final Object parentValue = dirNode.getParent().getValue();
-            return (parentValue instanceof Project || parentValue instanceof ModuleGroup);
+            return parentValue instanceof Project || parentValue instanceof ModuleGroup;
         }
         return false;
     }

@@ -41,8 +41,6 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
     
     protected final Logger LOG = Logger.getInstance(getClass());    
     protected final FileStatusCalculator myStatusCalc = new FileStatusCalculator();
-    
-    protected abstract String getName(ProjectViewNode node);
 
     protected abstract VirtualFile getVirtualFile(ProjectViewNode node);
 
@@ -81,18 +79,6 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
             }
             return null;
         }        
-    }
-
-    protected void addSmartText(PresentationData data, String text, SimpleTextAttributes attributes) {
-        boolean add = true;
-        for (ColoredFragment existing : data.getColoredText()) {
-            if (existing.getText().equals(text)) {
-                add = false;
-            }
-        }
-        if (add) {
-            data.addText(text, attributes);
-        }
     }
 
     protected ColoredFragment formatBranchName(ProjectViewStatus status) {
