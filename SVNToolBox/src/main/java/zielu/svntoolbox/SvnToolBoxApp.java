@@ -81,7 +81,6 @@ public class SvnToolBoxApp implements ApplicationComponent {
     }
 
     public NodeDecoration decorationFor(ProjectViewNode node) {
-        ApplicationManager.getApplication().assertIsDispatchThread();
         for (NodeDecoration candidate : myNodeDecorations) {
             if (candidate.isForMe(node)) {
                 return candidate;
