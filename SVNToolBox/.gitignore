@@ -1,14 +1,2 @@
-# Idea Files #
-.idea/
-*.iml
-atlassian-ide-plugin.xml
-
-*.class
-
 .gradle/
 build/
-
-# Package Files #
-*.jar
-*.war
-*.ear
