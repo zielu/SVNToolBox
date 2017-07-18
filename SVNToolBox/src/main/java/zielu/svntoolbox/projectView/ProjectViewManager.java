@@ -1,11 +1,7 @@
-/* 
+/*
  * @(#) $Id:  $
  */
 package zielu.svntoolbox.projectView;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.Sets;
@@ -18,13 +14,15 @@ import com.intellij.openapi.vcs.changes.committed.VcsConfigurationChangeListener
 import com.intellij.openapi.vcs.changes.committed.VcsConfigurationChangeListener.Notification;
 import com.intellij.openapi.vcs.update.UpdatedFilesListener;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileAdapter;
 import com.intellij.openapi.vfs.VirtualFileEvent;
 import com.intellij.openapi.vfs.VirtualFileListener;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.ex.VirtualFileManagerEx;
 import com.intellij.util.messages.MessageBusConnection;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import zielu.svntoolbox.FileStatusCalculator;
 import zielu.svntoolbox.SvnToolBoxProject;
 import zielu.svntoolbox.config.SvnToolBoxProjectState;
@@ -41,16 +39,16 @@ public class ProjectViewManager extends AbstractProjectComponent {
     private final Logger LOG = Logger.getInstance(getClass());
 
     private final AtomicBoolean myActive = new AtomicBoolean();
-    
+
     private ProjectViewStatusCache myStatusCache;
-    
+
     private MessageBusConnection myConnection;
     private VirtualFileListener myVfListener;
-    
+
     private Supplier<Integer> PV_SEQ;
-    
+
     public ProjectViewManager(Project project) {
-        super(project);        
+        super(project);
     }
 
     public static ProjectViewManager getInstance(Project project) {
@@ -112,7 +110,7 @@ public class ProjectViewManager extends AbstractProjectComponent {
             });
             myConnection.subscribe(UpdatedFilesListener.UPDATED_FILES, new UpdatedFilesListener() {
                 final FileStatusCalculator myStatusCalc = new FileStatusCalculator();
-    
+
                 @Override
                 public void consume(Set<String> paths) {
                     final Set<String> localPaths = Sets.newLinkedHashSet(paths);
@@ -136,8 +134,8 @@ public class ProjectViewManager extends AbstractProjectComponent {
                     });
                 }
             });
-    
-            myVfListener = new VirtualFileAdapter() {
+
+            myVfListener = new VirtualFileListener() {
                 @Override
                 public void beforeFileDeletion(VirtualFileEvent event) {
                     if (LOG.isDebugEnabled()) {
@@ -145,7 +143,7 @@ public class ProjectViewManager extends AbstractProjectComponent {
                     }
                     myStatusCache.evict(event.getFile());
                 }
-    
+
                 @Override
                 public void beforeFileMovement(VirtualFileMoveEvent event) {
                     if (LOG.isDebugEnabled()) {

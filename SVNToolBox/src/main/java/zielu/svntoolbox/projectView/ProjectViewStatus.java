@@ -1,9 +1,9 @@
-/* 
+/*
  * $Id$
  */
 package zielu.svntoolbox.projectView;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import zielu.svntoolbox.SvnToolBoxBundle;
 
@@ -18,25 +18,25 @@ public class ProjectViewStatus {
     public static final ProjectViewStatus EMPTY = new ProjectViewStatus() {
         @Override
         public boolean equals(Object other) {
-            return this == other;            
-        }    
+            return this == other;
+        }
     };
     public static final ProjectViewStatus PENDING = new ProjectViewStatus(SvnToolBoxBundle.getString("status.svn.pending"), true) {
         @Override
         public boolean equals(Object other) {
-            return this == other;            
-        }        
+            return this == other;
+        }
     };
     public static final ProjectViewStatus NOT_CONFIGURED = new ProjectViewStatus(SvnToolBoxBundle.getString("status.svn.notConfigured"), false) {
         @Override
         public boolean equals(Object other) {
-            return this == other;            
-        }    
+            return this == other;
+        }
     };
-    
+
     private final String myBranchName;
     private final boolean myTemporary;
-    
+
     public ProjectViewStatus(String branchName) {
         this(branchName, false);
     }
@@ -45,7 +45,7 @@ public class ProjectViewStatus {
         myBranchName = Preconditions.checkNotNull(branchName, "Null branch name");
         myTemporary = temporary;
     }
-    
+
     private ProjectViewStatus() {
         myBranchName = null;
         myTemporary = false;
@@ -88,7 +88,7 @@ public class ProjectViewStatus {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("branchName", myBranchName)
                 .add("temporary", myTemporary)
                 .toString();

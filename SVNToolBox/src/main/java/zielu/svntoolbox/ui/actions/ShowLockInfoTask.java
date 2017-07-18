@@ -105,7 +105,7 @@ public class ShowLockInfoTask extends FileBackgroundable {
                 datas.add(getString("configurable.app.svnlock.comment.label") + FIELD_DELIMITER + lock.getComment());
                 datas.add(getString("configurable.app.svnlock.creation.label") + FIELD_DELIMITER + (lock.getCreationDate() != null ? lock.getCreationDate() : EMPTY));
                 datas.add(getString("configurable.app.svnlock.expiration.label") + FIELD_DELIMITER + (lock.getExpirationDate() != null ? lock.getExpirationDate() : EMPTY));
-                final JList list = new JBList(datas);
+                final JList<String> list = new JBList<>(datas);
 
                 indicator.stop();
                 JBPopupFactory.getInstance()

@@ -1,7 +1,7 @@
-﻿<idea-plugin version="2" url="https://github.com/zielu/SVNToolBox">
+<idea-plugin url="https://github.com/zielu/SVNToolBox">
   <id>zielu.svntoolbox</id>
   <name>SVNToolBox</name>
-  <version>171.0</version>
+  <version>172.0</version>
   <vendor url="https://github.com/zielu/SVNToolBox">Lukasz Zielinski</vendor>
   <depends>com.intellij.modules.platform</depends>
   <depends>Subversion</depends>
@@ -37,9 +37,9 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes is 171.0</h3>
+      <h3>Changes is 172.0</h3>
       <ul>
-        <li>Fixed 2017 EAP compatibility</li>
+        <li>Compatible with 2017.2</li>
       </ul>
       <h3>Changes is 163.0</h3>
       <ul>
@@ -57,7 +57,7 @@
   </change-notes>
 
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="171.0000" until-build="171.*"/>
+  <idea-version since-build="172.0000" until-build="172.*" />
 
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
