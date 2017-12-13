@@ -23,10 +23,10 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.svn.SvnVcs;
+import org.jetbrains.idea.svn.api.Revision;
 import org.jetbrains.idea.svn.commandLine.SvnBindException;
 import org.jetbrains.idea.svn.info.Info;
 import org.jetbrains.idea.svn.lock.Lock;
-import org.tmatesoft.svn.core.wc.SVNRevision;
 import zielu.svntoolbox.SvnToolBoxApp;
 import zielu.svntoolbox.SvnToolBoxBundle;
 import zielu.svntoolbox.lockinfo.SvnLockOwnerComponent;
@@ -90,7 +90,7 @@ public class ShowLockInfoTask extends FileBackgroundable {
         //get lock infos
         try {
             indicator.setText(getString("configurable.app.svnlock.noinfo.get.url.info") + fileInfo.getURL());
-            Info urlInfo = svn.getInfo(fileInfo.getURL(), SVNRevision.UNDEFINED);
+            Info urlInfo = svn.getInfo(fileInfo.getURL(), Revision.UNDEFINED);
             if (urlInfo == null) {
                 indicator.stop();
                 return;
