@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  svn-serve:
+    build:
+      context: .
+    ports:
+      - 13960:3960
+      - 18080:80
