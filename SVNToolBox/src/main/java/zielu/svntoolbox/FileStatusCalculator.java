@@ -9,12 +9,8 @@ import com.google.common.collect.Lists;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
-import com.intellij.openapi.vcs.VcsException;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.svn.SvnConfiguration;
@@ -26,6 +22,10 @@ import org.jetbrains.idea.svn.branchConfig.SvnBranchConfigurationNew;
 import org.jetbrains.idea.svn.info.Info;
 import org.tmatesoft.svn.core.SVNURL;
 import zielu.svntoolbox.util.LogStopwatch;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * <p></p>
@@ -140,7 +140,7 @@ public class FileStatusCalculator {
     private Optional<FileStatus> statusForSvnKit(Info info, SvnVcs svn, SVNURL fileUrl, File currentFile) {
         Optional<VirtualFile> root = getWCRoot(currentFile);
         if (root.isPresent()) {
-            SVNURL branch = SvnUtil.getBranchForUrl(svn, root.get(), fileUrl.toString());
+            SVNURL branch = SvnUtil.getBranchForUrl(svn, root.get(), fileUrl);
             return Optional.of(new FileStatus(fileUrl, branch));
         }
         return Optional.absent();
