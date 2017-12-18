@@ -2,8 +2,9 @@ version: '2'
 
 services:
   svn-serve:
-    build:
-      context: .
+    image: erikxiv/subversion
+    container_name: svn_server
+    environment:
+      - SVN_REPONAME=repos
     ports:
-      - 13960:3960
-      - 18080:80
+      - 13690:3690
