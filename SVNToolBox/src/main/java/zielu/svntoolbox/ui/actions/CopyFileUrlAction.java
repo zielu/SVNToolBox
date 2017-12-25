@@ -13,7 +13,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.svn.SvnUtil;
 import org.jetbrains.idea.svn.SvnVcs;
-import org.tmatesoft.svn.core.SVNURL;
+import org.jetbrains.idea.svn.api.Url;
 import zielu.svntoolbox.SvnToolBoxBundle;
 
 /**
@@ -33,7 +33,7 @@ public class CopyFileUrlAction extends VirtualFileUnderSvnActionBase {
     protected void perform(AnActionEvent e, @NotNull Project project, @NotNull VirtualFile file) {
         SvnVcs svn = SvnVcs.getInstance(project);
         File currentFile = new File(file.getPath());
-        SVNURL fileUrl = SvnUtil.getUrl(svn, currentFile);
+        Url fileUrl = SvnUtil.getUrl(svn, currentFile);
         if (fileUrl != null) {
             CopyPasteManager.getInstance().setContents(new StringSelection(fileUrl.toString()));
         }

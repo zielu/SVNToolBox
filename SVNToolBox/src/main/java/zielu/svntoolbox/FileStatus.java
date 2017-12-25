@@ -6,7 +6,7 @@ package zielu.svntoolbox;
 import com.google.common.base.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.tmatesoft.svn.core.SVNURL;
+import org.jetbrains.idea.svn.api.Url;
 
 /**
  * <p></p>
@@ -20,7 +20,7 @@ public class FileStatus {
     public static final Optional<FileStatus> EMPTY_OPTIONAL = Optional.of(EMPTY);
     
     private final boolean myUnderVcs;
-    private final SVNURL myUrl;
+    private final Url myUrl;
     private final Optional<String> myBranchName;
     private final Optional<String> myBranchDirectory;
 
@@ -31,21 +31,21 @@ public class FileStatus {
         myBranchDirectory = Optional.absent();
     }
 
-    public FileStatus(@NotNull SVNURL url) {
+    public FileStatus(@NotNull Url url) {
         myUnderVcs = true;
         myUrl = url;
         myBranchName = Optional.absent();
         myBranchDirectory = Optional.absent();
     }
 
-    public FileStatus(@NotNull SVNURL url, @Nullable String branchName) {
+    public FileStatus(@NotNull Url url, @Nullable String branchName) {
         myUnderVcs = true;
         myUrl = url;
         myBranchName = Optional.fromNullable(branchName);
         myBranchDirectory = Optional.absent();
     }
 
-    public FileStatus(@NotNull SVNURL url, @Nullable SVNURL branch) {
+    public FileStatus(@NotNull Url url, @Nullable Url branch) {
         myUnderVcs = true;
         myUrl = url;
         if (branch != null) {
@@ -70,7 +70,7 @@ public class FileStatus {
         return myUnderVcs;
     }
 
-    public SVNURL getURL() {
+    public Url getURL() {
         return myUrl;
     }
 
