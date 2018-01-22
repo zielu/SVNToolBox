@@ -11,6 +11,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.svn.SvnConfiguration;
@@ -22,10 +25,6 @@ import org.jetbrains.idea.svn.branchConfig.SvnBranchConfigurationNew;
 import org.jetbrains.idea.svn.info.Info;
 import org.tmatesoft.svn.core.SVNURL;
 import zielu.svntoolbox.util.LogStopwatch;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * <p></p>
@@ -123,7 +122,7 @@ public class FileStatusCalculator {
                 watch.tick("Root VF by File");
                 SvnBranchConfigurationNew branchConfig = branchManager.get(root.get());
                 watch.tick("Branch Config");
-                String fileUrlPath = fileUrl.toString();
+                String fileUrlPath = fileUrl.toDecodedString();
                 String baseName = branchConfig.getBaseName(fileUrlPath);
                 watch.tick("Base Name");
                 watch.stop();

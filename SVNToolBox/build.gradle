@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 buildscript {
     repositories {
         maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
@@ -35,3 +37,24 @@ idea {
 }
 
 version = "${version}"
+if (version.endsWith("-dev")) {
+    version += ".${buildTime()}"
+}
+
+def static buildTime() {
+    def df = new SimpleDateFormat("yyyyMMdd.HHmmss")
+    df.setTimeZone(TimeZone.getTimeZone("UTC"))
+    return df.format(new Date())
+}
+
+compileJava {
+    options.encoding = "${javaEncoding}"
+}
+
+compileTestJava {
+    options.encoding = "${javaEncoding}"
+}
+
+dependencies {
+    testCompile 'org.assertj:assertj-core:3.9.0'
+}

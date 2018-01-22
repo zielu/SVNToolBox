@@ -49,7 +49,7 @@ public class FileStatus {
         myUnderVcs = true;
         myUrl = url;
         if (branch != null) {
-            String[] parts = branch.toString().split("/");
+            String[] parts = branch.toDecodedString().split("/");
             if (parts.length > 1) {
                 myBranchDirectory = Optional.of(parts[parts.length - 2]);
             } else {
