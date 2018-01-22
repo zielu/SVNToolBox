@@ -3,10 +3,6 @@
  */
 package zielu.svntoolbox.ui.projectView.impl;
 
-import java.awt.Color;
-
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.projectView.ProjectViewNode;
 import com.intellij.ide.util.treeView.PresentableNodeDescriptor.ColoredFragment;
@@ -14,6 +10,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
+import java.awt.Color;
+import java.util.function.Supplier;
 import org.jetbrains.annotations.Nullable;
 import zielu.svntoolbox.FileStatusCalculator;
 import zielu.svntoolbox.SvnToolBoxBundle;
@@ -86,7 +84,7 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
     }
 
     protected boolean isUnderSvn(ProjectViewNode node, Supplier<Integer> PV_SEQ) {
-        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, PV_SEQ, Suppliers.ofInstance("Under SVN")).start();
+        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, PV_SEQ, () -> "Under SVN").start();
         VirtualFile vFile = getVirtualFile(node);
         watch.tick("Get VFile");
         boolean result = false;
@@ -109,7 +107,7 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
     public final void decorate(ProjectViewNode node, PresentationData data) {
         Supplier<Integer> PV_SEQ = SvnToolBoxProject.getInstance(node.getProject()).sequence();
         if (isUnderSvn(node, PV_SEQ)) {
-            LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, PV_SEQ, Suppliers.ofInstance("Decorate")).start();
+            LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, PV_SEQ, () -> "Decorate").start();
             applyDecorationUnderSvn(node, data);
             watch.stop();
         }

@@ -3,9 +3,6 @@
  */
 package zielu.svntoolbox.ui;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
@@ -25,6 +22,8 @@ import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -160,7 +159,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
         return new Notification() {
             @Override
             public void execute(Project project, VirtualFile vcsRoot) {
-                runUpdate(project, Optional.fromNullable(vcsRoot));
+                runUpdate(project, Optional.ofNullable(vcsRoot));
             }
         };
     }
@@ -184,7 +183,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     }
 
     private boolean setText(String text) {
-        if (!Objects.equal(myText, text)) {
+        if (!Objects.equals(myText, text)) {
             myText = text;
             return true;
         }
@@ -192,7 +191,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     }
 
     private boolean setToolTip(String toolTip) {
-        if (!Objects.equal(myToolTip, toolTip)) {
+        if (!Objects.equals(myToolTip, toolTip)) {
             myToolTip = toolTip;
             return true;
         }
@@ -261,7 +260,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
             ApplicationManager.getApplication().invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, Suppliers.ofInstance("UpdateUi")).start();
+                    LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, () -> "UpdateUi").start();
                     UpdateResult result = maybeResult.get();
                     boolean empty = true;
                     AtomicBoolean updated = new AtomicBoolean();
@@ -306,7 +305,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     }
 
     private Optional<UpdateResult> update(@NotNull Project project, Optional<VirtualFile> vcsRoot) {
-        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, Suppliers.ofInstance("Update")).start();
+        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, () -> "Update").start();
         SvnVcs svn = SvnVcs.getInstance(project);
         FileStatus status = null;
         VirtualFile currentVf = null;
@@ -328,14 +327,14 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
 
     private Optional<UpdateResult> update() {
         if (isDisposed()) {
-            return Optional.absent();
+            return Optional.empty();
         } else {
             Project project = getProject();
             if (project == null) {
                 empty();
-                return Optional.absent();
+                return Optional.empty();
             }
-            return update(project, Optional.<VirtualFile>absent());
+            return update(project, Optional.empty());
         }
     }
 

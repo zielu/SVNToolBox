@@ -3,13 +3,13 @@
  */
 package zielu.svntoolbox;
 
-import com.google.common.base.Supplier;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
+import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 import zielu.svntoolbox.ui.SvnBranchWidget;
 import zielu.svntoolbox.util.IntegerSequenceSupplier;

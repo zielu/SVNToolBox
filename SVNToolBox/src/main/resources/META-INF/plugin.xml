@@ -74,9 +74,6 @@
       <implementation-class>zielu.svntoolbox.SvnToolBoxApp</implementation-class>
     </component>
     <component>
-     <implementation-class>zielu.svntoolbox.config.SvnToolBoxAppState</implementation-class>
-    </component>
-    <component>
       <implementation-class>zielu.svntoolbox.lockinfo.SvnLockOwnerComponent</implementation-class>
     </component>
   </application-components>
@@ -126,8 +123,9 @@
   </extensionPoints>
 
   <extensions defaultExtensionNs="com.intellij">
-    <projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator" />
+    <applicationService serviceImplementation="zielu.svntoolbox.config.SvnToolBoxAppState"/>
     <projectService serviceImplementation="zielu.svntoolbox.config.SvnToolBoxProjectState" />
+    <projectViewNodeDecorator implementation="zielu.svntoolbox.ui.projectView.SvnProjectViewNodeDecorator"/>
 
     <applicationConfigurable instance="zielu.svntoolbox.ui.config.SvnToolBoxConfigurable" id="zielu.svntoolbox.app.config" />
     <!-- Add your extensions here -->

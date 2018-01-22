@@ -46,7 +46,6 @@ public class SvnToolBoxApp implements ApplicationComponent {
     }
 
     public Future<?> submit(Runnable task) {
-        //return ApplicationManager.getApplication().executeOnPooledThread(task);
         return myExecutor.submit(task);
     }
 
@@ -74,9 +73,7 @@ public class SvnToolBoxApp implements ApplicationComponent {
         for (NodeDecorationEP decorationEP : nodeDecorationEPs) {
             NodeDecoration decoration = decorationEP.instantiate();
             myNodeDecorations.add(decoration);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Added decoration "+decorationEP.priority+" "+decoration);
-            }
+          LOG.debug("Added decoration ", decorationEP.priority, " ", decoration);
         }
     }
 

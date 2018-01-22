@@ -3,13 +3,12 @@
  */
 package zielu.svntoolbox.util;
 
+import com.google.common.base.Stopwatch;
+import com.intellij.openapi.diagnostic.Logger;
 import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
-
-import com.google.common.base.Optional;
-import com.google.common.base.Stopwatch;
-import com.google.common.base.Supplier;
-import com.intellij.openapi.diagnostic.Logger;
+import java.util.function.Supplier;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * <p></p>
@@ -21,12 +20,13 @@ import com.intellij.openapi.diagnostic.Logger;
 public abstract class LogStopwatch {
     protected final Logger LOG;
     private final Supplier<String> myNameSupplier;
-    private final Optional<Supplier<Integer>> mySequence;
+  @Nullable
+  private final Supplier<Integer> mySequence;
     private final Stopwatch myStopwatch = Stopwatch.createUnstarted();
     
     private String myName;
-    
-    protected LogStopwatch(Logger log, Optional<Supplier<Integer>> sequence, Supplier<String> nameSupplier) {
+
+  protected LogStopwatch(Logger log, @Nullable Supplier<Integer> sequence, Supplier<String> nameSupplier) {
         LOG = log;
         myNameSupplier = nameSupplier;
         mySequence = sequence;
@@ -41,7 +41,7 @@ public abstract class LogStopwatch {
     }
 
     private String prepareName(String prefix) {
-        return "["+prefix+":" + myName + (mySequence.isPresent() ? "|"+mySequence.get().get() : "") +"]";            
+      return "[" + prefix + ":" + myName + (mySequence != null ? "|" + mySequence.get() : "") + "]";
     }
     
     public void tick(String message, Object... args) {
@@ -65,7 +65,7 @@ public abstract class LogStopwatch {
 
     private static class DebugStopwatch extends LogStopwatch {
 
-        protected DebugStopwatch(Logger log, Optional<Supplier<Integer>> sequence, Supplier<String> nameSupplier) {
+      protected DebugStopwatch(Logger log, @Nullable Supplier<Integer> sequence, Supplier<String> nameSupplier) {
             super(log, sequence, nameSupplier);
         }
 
@@ -81,10 +81,10 @@ public abstract class LogStopwatch {
     }
     
     public static LogStopwatch debugStopwatch(Logger log, Supplier<String> nameSupplier) {
-        return new DebugStopwatch(log, Optional.<Supplier<Integer>>absent(), nameSupplier);
+      return new DebugStopwatch(log, null, nameSupplier);
     }
     
     public static LogStopwatch debugStopwatch(Logger log, Supplier<Integer> sequence, Supplier<String> nameSupplier) {
-        return new DebugStopwatch(log, Optional.of(sequence), nameSupplier); 
+      return new DebugStopwatch(log, sequence, nameSupplier);
     }
 }

@@ -3,14 +3,6 @@
  */
 package zielu.svntoolbox.async;
 
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.google.common.base.Optional;
-import com.google.common.base.Supplier;
 import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
@@ -19,8 +11,15 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.DumbService.DumbModeListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.containers.ConcurrentHashSet;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.messages.MessageBusConnection;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import zielu.svntoolbox.FileStatus;
@@ -47,7 +46,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
     
     private final FileStatusCalculator myStatusCalc = new FileStatusCalculator();
     private final BlockingQueue<StatusRequest> myRequestQueue = new LinkedBlockingQueue<StatusRequest>();
-    private final Set<VirtualFile> myPendingFiles = new ConcurrentHashSet<VirtualFile>();
+  private final Set<VirtualFile> myPendingFiles = ContainerUtil.newConcurrentSet();
 
     private final AtomicBoolean myActive = new AtomicBoolean();
     private final AtomicBoolean myCalculationInProgress = new AtomicBoolean();
@@ -169,7 +168,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
                 }
             }
         }
-        return Optional.absent();
+      return Optional.empty();
     }
 
     private class Task implements Runnable {

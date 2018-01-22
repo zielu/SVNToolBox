@@ -5,16 +5,14 @@ package zielu.svntoolbox.config;
 
 import com.google.common.base.Strings;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.components.StoragePathMacros;
 import com.intellij.ui.JBColor;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
 import java.awt.Color;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import zielu.svntoolbox.projectView.DecorationSettingsNotifier;
 
@@ -26,15 +24,10 @@ import zielu.svntoolbox.projectView.DecorationSettingsNotifier;
  * @author Lukasz Zielinski
  */
 @State(
-        name = "SvnToolBoxAppConfig",
-        storages = {
-                @Storage(
-                        id = "other",
-                        file = StoragePathMacros.APP_CONFIG + "/SvnToolBox.xml"
-                )
-        }
+    name = "SvnToolBoxAppConfig",
+    storages = @Storage("SvnToolBox.xml")
 )
-public class SvnToolBoxAppState implements PersistentStateComponent<SvnToolBoxAppState>, ApplicationComponent {
+public class SvnToolBoxAppState implements PersistentStateComponent<SvnToolBoxAppState> {
     public boolean customRegularColor;
     public int regularR = 159;
     public int regularG = 107;
@@ -56,7 +49,7 @@ public class SvnToolBoxAppState implements PersistentStateComponent<SvnToolBoxAp
     private static final SvnToolBoxAppState EMPTY = new SvnToolBoxAppState();
 
     public static SvnToolBoxAppState getInstance() {
-        return ApplicationManager.getApplication().getComponent(SvnToolBoxAppState.class);
+        return ServiceManager.getService(SvnToolBoxAppState.class);
     }
 
     public String getCsvFile() {
@@ -165,19 +158,5 @@ public class SvnToolBoxAppState implements PersistentStateComponent<SvnToolBoxAp
     @Override
     public void loadState(SvnToolBoxAppState state) {
         XmlSerializerUtil.copyBean(state, this);
-    }
-
-    @Override
-    public void initComponent() {
-    }
-
-    @Override
-    public void disposeComponent() {
-    }
-
-    @NotNull
-    @Override
-    public String getComponentName() {
-        return getClass().getSimpleName();
     }
 }

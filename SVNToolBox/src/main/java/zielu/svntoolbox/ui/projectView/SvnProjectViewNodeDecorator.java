@@ -3,7 +3,6 @@
  */
 package zielu.svntoolbox.ui.projectView;
 
-import com.google.common.base.Suppliers;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.projectView.ProjectViewNode;
 import com.intellij.ide.projectView.ProjectViewNodeDecorator;
@@ -35,15 +34,16 @@ public class SvnProjectViewNodeDecorator implements ProjectViewNodeDecorator {
                 if (config.showingAnyDecorations()) {
                     SvnToolBoxApp svnToolBox = SvnToolBoxApp.getInstance();
                     SvnToolBoxProject svnToolBoxProject = SvnToolBoxProject.getInstance(project);
-                    
-                    LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, svnToolBoxProject.sequence(), Suppliers.ofInstance("Decorator")).start();
+
+                  LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, svnToolBoxProject.sequence(),
+                      () -> "Decorator").start();
                     NodeDecoration decoration = svnToolBox.decorationFor(node);                    
                     watch.tick("Decoration selected {0}", decoration);
                     
                     if (LOG.isDebugEnabled()) {
                         final int seq = svnToolBoxProject.sequence().get();
-                        LOG.debug("[" + seq + "] Node: " + decoration.getClass().getName() 
-                                + " " + node + " " + node.getClass().getName());
+                      LOG.debug("[", seq, "] Node: ", decoration.getClass().getName(), " ",
+                          node, " ", node.getClass().getName());
                     }
                     if (decoration.getType() == NodeDecorationType.Module) {
                         if (config.showProjectViewModuleDecoration) {                            

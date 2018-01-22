@@ -4,8 +4,7 @@
 package zielu.svntoolbox.util;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.google.common.base.Supplier;
+import java.util.function.Supplier;
 
 /**
  * <p></p>
@@ -14,7 +13,7 @@ import com.google.common.base.Supplier;
  *
  * @author Lukasz Zielinski
  */
-public class IntegerSequenceSupplier implements Supplier<Integer>  {
+public class IntegerSequenceSupplier implements Supplier<Integer> {
     private final AtomicInteger sequence = new AtomicInteger();
     
     @Override

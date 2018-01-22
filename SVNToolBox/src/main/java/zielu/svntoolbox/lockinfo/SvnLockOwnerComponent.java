@@ -1,7 +1,6 @@
 package zielu.svntoolbox.lockinfo;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
@@ -16,6 +15,7 @@ import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.lang.StringUtils;
@@ -71,7 +71,7 @@ public class SvnLockOwnerComponent implements ApplicationComponent {
             lock.readLock().lock();
             lock.writeLock().unlock();
             try {
-                return Optional.fromNullable(ownerMapping.get(owner.toLowerCase()));
+              return Optional.ofNullable(ownerMapping.get(owner.toLowerCase()));
             } finally {
                 lock.readLock().unlock();
             }
@@ -79,7 +79,7 @@ public class SvnLockOwnerComponent implements ApplicationComponent {
             ownerMapping.clear();
         }
         lock.writeLock().unlock();
-        return Optional.absent();
+      return Optional.empty();
     }
 
     public String getOwner(String owner) {

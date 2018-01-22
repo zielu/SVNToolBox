@@ -3,7 +3,6 @@
  */
 package zielu.svntoolbox.projectView;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.Sets;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.openapi.application.ApplicationManager;
@@ -23,6 +22,7 @@ import com.intellij.util.messages.MessageBusConnection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import zielu.svntoolbox.FileStatusCalculator;
 import zielu.svntoolbox.SvnToolBoxProject;
 import zielu.svntoolbox.config.SvnToolBoxProjectState;

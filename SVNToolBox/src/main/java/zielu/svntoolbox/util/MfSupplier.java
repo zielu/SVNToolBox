@@ -4,8 +4,7 @@
 package zielu.svntoolbox.util;
 
 import java.text.MessageFormat;
-
-import com.google.common.base.Supplier;
+import java.util.function.Supplier;
 
 /**
  * <p></p>

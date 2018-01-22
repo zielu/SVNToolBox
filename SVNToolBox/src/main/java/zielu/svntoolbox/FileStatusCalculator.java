@@ -3,8 +3,6 @@
  */
 package zielu.svntoolbox;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -14,6 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.svn.SvnConfiguration;
@@ -102,8 +101,8 @@ public class FileStatusCalculator {
         //TODO: there is also #getWorkingCopyRootNew for Svn 1.8
         File root = SvnUtil.getWorkingCopyRootNew(currentFile);
         if (root == null) {
-            LOG.debug("WC root not found for: file="+currentFile.getAbsolutePath());
-            return Optional.absent();
+          LOG.debug("WC root not found for: file=", currentFile.getAbsolutePath());
+          return Optional.empty();
         } else {
             VirtualFile rootVf = SvnUtil.getVirtualFile(root.getPath());
             assert rootVf != null: "Root VF not found for: "+root.getPath();
@@ -113,7 +112,7 @@ public class FileStatusCalculator {
     
     private Optional<FileStatus> statusForCli(Project project, SVNURL fileUrl, File currentFile) {
         LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, SvnToolBoxProject.getInstance(project).sequence(),
-                Suppliers.ofInstance("Status For Cli")).start();
+            () -> "Status For Cli").start();
         Optional<VirtualFile> root = getWCRoot(currentFile);
         watch.tick("WC Root");
         if (root.isPresent()) {
@@ -133,7 +132,7 @@ public class FileStatusCalculator {
         } else {
             watch.stop();
         }
-        return Optional.absent();
+      return Optional.empty();
     }
     
     private Optional<FileStatus> statusForSvnKit(Info info, SvnVcs svn, SVNURL fileUrl, File currentFile) {
@@ -142,7 +141,7 @@ public class FileStatusCalculator {
             SVNURL branch = SvnUtil.getBranchForUrl(svn, root.get(), fileUrl);
             return Optional.of(new FileStatus(fileUrl, branch));
         }
-        return Optional.absent();
+      return Optional.empty();
     }
     
     @NotNull

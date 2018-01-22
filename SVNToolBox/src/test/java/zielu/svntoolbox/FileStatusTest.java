@@ -20,6 +20,6 @@ public class FileStatusTest {
   @Test
   public void chineseCharactersAreDecoded() {
     FileStatus status = new FileStatus(baseUrl, branchUrl);
-    assertThat(status.getBranchName().get()).isEqualTo("旺票运营平台");
+    assertThat(status.getBranchName()).contains("旺票运营平台");
   }
 }

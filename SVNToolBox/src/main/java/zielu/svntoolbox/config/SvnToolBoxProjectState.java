@@ -3,12 +3,10 @@
  */
 package zielu.svntoolbox.config;
 
-import com.intellij.lifecycle.PeriodicalTasksCloser;
 import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.components.StoragePathMacros;
-import com.intellij.openapi.components.StorageScheme;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
@@ -22,18 +20,15 @@ import org.jetbrains.annotations.Nullable;
  * @author Lukasz Zielinski
  */
 @State(
-        name = "SvnToolBoxConfig",
-        storages = {
-                @Storage(id = "default", file = StoragePathMacros.PROJECT_FILE),
-                @Storage(id = "dir", file = StoragePathMacros.PROJECT_CONFIG_DIR + "/SvnToolBox.xml", scheme = StorageScheme.DIRECTORY_BASED)
-        }
+    name = "SvnToolBoxConfig",
+    storages = @Storage("SvnToolBox.xml")
 )
 public class SvnToolBoxProjectState implements PersistentStateComponent<SvnToolBoxProjectState> {
     public boolean showProjectViewModuleDecoration = true;
     public boolean showProjectViewSwitchedDecoration = true;
 
     public static SvnToolBoxProjectState getInstance(@NotNull Project project) {
-        return PeriodicalTasksCloser.getInstance().safeGetService(project, SvnToolBoxProjectState.class);
+        return ServiceManager.getService(project, SvnToolBoxProjectState.class);
     }
 
     public boolean showingAnyDecorations() {

@@ -3,7 +3,7 @@
  */
 package zielu.svntoolbox;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.tmatesoft.svn.core.SVNURL;
@@ -21,28 +21,28 @@ public class FileStatus {
     
     private final boolean myUnderVcs;
     private final SVNURL myUrl;
-    private final Optional<String> myBranchName;
-    private final Optional<String> myBranchDirectory;
+    private final String myBranchName;
+    private final String myBranchDirectory;
 
     private FileStatus() {
         myUnderVcs = false;
         myUrl = null;
-        myBranchName = Optional.absent();
-        myBranchDirectory = Optional.absent();
+        myBranchName = null;
+        myBranchDirectory = null;
     }
 
     public FileStatus(@NotNull SVNURL url) {
         myUnderVcs = true;
         myUrl = url;
-        myBranchName = Optional.absent();
-        myBranchDirectory = Optional.absent();
+        myBranchName = null;
+        myBranchDirectory = null;
     }
 
     public FileStatus(@NotNull SVNURL url, @Nullable String branchName) {
         myUnderVcs = true;
         myUrl = url;
-        myBranchName = Optional.fromNullable(branchName);
-        myBranchDirectory = Optional.absent();
+        myBranchName = branchName;
+        myBranchDirectory = null;
     }
 
     public FileStatus(@NotNull SVNURL url, @Nullable SVNURL branch) {
@@ -51,18 +51,18 @@ public class FileStatus {
         if (branch != null) {
             String[] parts = branch.toDecodedString().split("/");
             if (parts.length > 1) {
-                myBranchDirectory = Optional.of(parts[parts.length - 2]);
+                myBranchDirectory = parts[parts.length - 2];
             } else {
-                myBranchDirectory = Optional.absent();
+                myBranchDirectory = null;
             }
             if (parts.length > 0) {
-                myBranchName = Optional.of(parts[parts.length - 1]);
+                myBranchName = parts[parts.length - 1];
             } else {
-                myBranchName = Optional.absent();
+                myBranchName = null;
             }
         } else {
-            myBranchName = Optional.absent();
-            myBranchDirectory = Optional.absent();
+            myBranchName = null;
+            myBranchDirectory = null;
         }
     }
 
@@ -75,10 +75,10 @@ public class FileStatus {
     }
 
     public Optional<String> getBranchName() {
-        return myBranchName;
+        return Optional.ofNullable(myBranchName);
     }
 
     public Optional<String> getBranchDirectory() {
-        return myBranchDirectory;
+        return Optional.ofNullable(myBranchDirectory);
     }
 }
