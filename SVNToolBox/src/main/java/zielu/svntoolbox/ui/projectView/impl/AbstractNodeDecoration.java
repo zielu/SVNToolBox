@@ -84,7 +84,7 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
     }
 
     protected boolean isUnderSvn(ProjectViewNode node, Supplier<Integer> PV_SEQ) {
-        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, PV_SEQ, () -> "Under SVN").start();
+        LogStopwatch watch = LogStopwatch.debugStopwatch(PV_SEQ, () -> "Under SVN").start();
         VirtualFile vFile = getVirtualFile(node);
         watch.tick("Get VFile");
         boolean result = false;
@@ -107,7 +107,7 @@ public abstract class AbstractNodeDecoration implements NodeDecoration {
     public final void decorate(ProjectViewNode node, PresentationData data) {
         Supplier<Integer> PV_SEQ = SvnToolBoxProject.getInstance(node.getProject()).sequence();
         if (isUnderSvn(node, PV_SEQ)) {
-            LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, PV_SEQ, () -> "Decorate").start();
+            LogStopwatch watch = LogStopwatch.debugStopwatch(PV_SEQ, () -> "Decorate").start();
             applyDecorationUnderSvn(node, data);
             watch.stop();
         }

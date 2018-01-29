@@ -183,7 +183,7 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
                     if (request != null) {
                         if (myPendingFiles.remove(request.file)) {                                                        
                             AccessToken token = ApplicationManager.getApplication().acquireReadActionLock();
-                            LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, PV_SEQ, 
+                            LogStopwatch watch = LogStopwatch.debugStopwatch(PV_SEQ,
                                     new MfSupplier("Status calculation for {0}", request.file)).start();
                             FileStatus status;
                             try {                                                                                                 

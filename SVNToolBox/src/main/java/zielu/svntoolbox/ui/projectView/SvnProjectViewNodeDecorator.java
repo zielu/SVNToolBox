@@ -35,7 +35,7 @@ public class SvnProjectViewNodeDecorator implements ProjectViewNodeDecorator {
                     SvnToolBoxApp svnToolBox = SvnToolBoxApp.getInstance();
                     SvnToolBoxProject svnToolBoxProject = SvnToolBoxProject.getInstance(project);
 
-                  LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, svnToolBoxProject.sequence(),
+                  LogStopwatch watch = LogStopwatch.debugStopwatch(svnToolBoxProject.sequence(),
                       () -> "Decorator").start();
                     NodeDecoration decoration = svnToolBox.decorationFor(node);                    
                     watch.tick("Decoration selected {0}", decoration);
