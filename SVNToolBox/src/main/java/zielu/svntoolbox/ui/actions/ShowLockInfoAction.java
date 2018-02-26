@@ -1,6 +1,6 @@
 package zielu.svntoolbox.ui.actions;
 
-import static zielu.svntoolbox.SvnToolBoxBundle.*;
+import static zielu.svntoolbox.SvnToolBoxBundle.getString;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -16,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
  * @author Lukasz Zielinski
  */
 public class ShowLockInfoAction extends VirtualFileUnderSvnActionBase {
-
     public ShowLockInfoAction() {
         super(getString("action.show.lock.info"));
     }
@@ -25,6 +24,4 @@ public class ShowLockInfoAction extends VirtualFileUnderSvnActionBase {
     protected void perform(AnActionEvent e, @NotNull Project project, @NotNull VirtualFile file) {
         new ShowLockInfoTask(project, file).queue();
     }
-
-
 }

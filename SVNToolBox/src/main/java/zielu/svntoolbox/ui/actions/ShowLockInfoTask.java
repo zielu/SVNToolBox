@@ -1,8 +1,8 @@
 package zielu.svntoolbox.ui.actions;
 
-import static com.google.common.collect.Iterables.*;
-import static org.apache.commons.lang.StringUtils.*;
-import static zielu.svntoolbox.SvnToolBoxBundle.*;
+import static com.google.common.collect.Iterables.getLast;
+import static org.apache.commons.lang.StringUtils.EMPTY;
+import static zielu.svntoolbox.SvnToolBoxBundle.getString;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -41,10 +41,10 @@ import zielu.svntoolbox.util.FileBackgroundable;
  * @author Lukasz Zielinski
  */
 public class ShowLockInfoTask extends FileBackgroundable {
-    private final Logger LOG = Logger.getInstance(getClass());
-
     private static final String FIELD_DELIMITER = " : ";
     private static final Splitter splitter = Splitter.on(FIELD_DELIMITER).trimResults();
+
+  private final Logger LOG = Logger.getInstance(getClass());
 
     private Notification createNoLockNotification() {
         return SvnToolBoxApp.NOTIFICATION.createNotification(
@@ -57,17 +57,8 @@ public class ShowLockInfoTask extends FileBackgroundable {
 
     private void showNoLockNotification(Project project) {
         final Notification notification = createNoLockNotification();
-        SvnToolBoxApp.getInstance().schedule(new Runnable() {
-            @Override
-            public void run() {
-                UIUtil.invokeAndWaitIfNeeded(new Runnable() {
-                    @Override
-                    public void run() {
-                        notification.expire();
-                    }
-                });
-            }
-        }, 5, TimeUnit.SECONDS);
+      SvnToolBoxApp.getInstance().schedule(() -> UIUtil.invokeAndWaitIfNeeded((Runnable) notification::expire),
+          5, TimeUnit.SECONDS);
         notification.notify(project);
     }
 
@@ -105,33 +96,41 @@ public class ShowLockInfoTask extends FileBackgroundable {
                 datas.add(getString("configurable.app.svnlock.comment.label") + FIELD_DELIMITER + lock.getComment());
                 datas.add(getString("configurable.app.svnlock.creation.label") + FIELD_DELIMITER + (lock.getCreationDate() != null ? lock.getCreationDate() : EMPTY));
                 datas.add(getString("configurable.app.svnlock.expiration.label") + FIELD_DELIMITER + (lock.getExpirationDate() != null ? lock.getExpirationDate() : EMPTY));
-                final JList<String> list = new JBList<>(datas);
-
-                indicator.stop();
-                JBPopupFactory.getInstance()
-                    .createListPopupBuilder(list)
-                    .setTitle(getString("configurable.app.svnlock.title"))
-                    .setResizable(true)
-                    .setItemChoosenCallback(new Runnable() {
-                                                public void run() {
-                                                    if (list.getSelectedIndices().length > 0) {
-                                                        String selectedValue = (String) list.getSelectedValue();
-
-                                                        if (Strings.isNotBlank(selectedValue) && selectedValue.contains(FIELD_DELIMITER)) {
-                                                            CopyPasteManager.getInstance().setContents(new StringSelection(getLast(splitter.split(selectedValue))));
-                                                        }
-                                                    }
-                                                }
-                                            }
-                    ).createPopup().showInFocusCenter();
+              indicator.stop();
+              showLockPopupInEdt(datas);
             } else {
-                indicator.stop();
-                showNoLockNotification(getProject());
+              indicator.stop();
+              showNoLockNotification(getProject());
             }
         } catch (SvnBindException sbe) {
-            indicator.stop();
-            LOG.warn("Could not get info for " + getFile(), sbe);
+          indicator.stop();
+          LOG.warn("Could not get info for " + getFile(), sbe);
         }
     }
 
+  private void showLockPopupInEdt(List<String> datas) {
+    UIUtil.invokeLaterIfNeeded(() -> showLockPopup(datas));
+  }
+
+  private void showLockPopup(List<String> datas) {
+    final JList<String> list = new JBList<>(datas);
+
+    JBPopupFactory.getInstance()
+        .createListPopupBuilder(list)
+        .setTitle(getString("configurable.app.svnlock.title"))
+        .setResizable(true)
+        .setItemChoosenCallback(() -> itemChosen(list))
+        .createPopup()
+        .showInFocusCenter();
+  }
+
+  private void itemChosen(JList<String> list) {
+    if (list.getSelectedIndices().length > 0) {
+      String selectedValue = list.getSelectedValue();
+
+      if (Strings.isNotBlank(selectedValue) && selectedValue.contains(FIELD_DELIMITER)) {
+        CopyPasteManager.getInstance().setContents(new StringSelection(getLast(splitter.split(selectedValue))));
+      }
+    }
+  }
 }
