@@ -2,7 +2,8 @@ version: '2'
 
 services:
   svn-serve:
-    image: erikxiv/subversion
+    build:
+      context: .
     container_name: svn_server
     environment:
       - SVN_REPONAME=repos
