@@ -2,7 +2,7 @@ import java.text.SimpleDateFormat
 
 buildscript {
     repositories {
-        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
+        mavenCentral()
     }
 }
 
@@ -61,5 +61,5 @@ compileTestJava {
 }
 
 dependencies {
-    testCompile 'org.assertj:assertj-core:3.9.0'
+    testCompile "org.assertj:assertj-core:${assertjVersion}"
 }
