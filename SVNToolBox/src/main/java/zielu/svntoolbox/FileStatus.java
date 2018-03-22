@@ -22,48 +22,23 @@ public class FileStatus {
     private final boolean myUnderVcs;
     private final Url myUrl;
     private final String myBranchName;
-    private final String myBranchDirectory;
 
     private FileStatus() {
         myUnderVcs = false;
         myUrl = null;
         myBranchName = null;
-        myBranchDirectory = null;
     }
 
     public FileStatus(@NotNull Url url) {
         myUnderVcs = true;
         myUrl = url;
         myBranchName = null;
-        myBranchDirectory = null;
     }
 
     public FileStatus(@NotNull Url url, @Nullable String branchName) {
         myUnderVcs = true;
         myUrl = url;
         myBranchName = branchName;
-        myBranchDirectory = null;
-    }
-
-    public FileStatus(@NotNull Url url, @Nullable Url branch) {
-        myUnderVcs = true;
-        myUrl = url;
-        if (branch != null) {
-            String[] parts = branch.toDecodedString().split("/");
-            if (parts.length > 1) {
-                myBranchDirectory = parts[parts.length - 2];
-            } else {
-                myBranchDirectory = null;
-            }
-            if (parts.length > 0) {
-                myBranchName = parts[parts.length - 1];
-            } else {
-                myBranchName = null;
-            }
-        } else {
-            myBranchName = null;
-            myBranchDirectory = null;
-        }
     }
 
     public boolean isUnderVcs() {
@@ -76,9 +51,5 @@ public class FileStatus {
 
     public Optional<String> getBranchName() {
         return Optional.ofNullable(myBranchName);
-    }
-
-    public Optional<String> getBranchDirectory() {
-        return Optional.ofNullable(myBranchDirectory);
     }
 }

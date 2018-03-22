@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.svn.SvnConfiguration;
 import org.jetbrains.idea.svn.SvnStatusUtil;
 import org.jetbrains.idea.svn.SvnUtil;
 import org.jetbrains.idea.svn.SvnVcs;
@@ -43,18 +42,6 @@ public class FileStatusCalculator {
             }
         }
         return result;
-    }
-
-    public boolean allFilesUnderSvn(@Nullable Project project, VirtualFile... vFiles) {
-        if (project == null) {
-            return false;
-        }
-        final SvnVcs svn = SvnVcs.getInstance(project);
-        return allFilesUnderSvn(svn, project, vFiles);
-    }
-
-    public boolean allFilesUnderSvn(@NotNull SvnVcs svn, @Nullable Project project, VirtualFile... vFiles) {
-        return allFilesUnderSvnImpl(svn, project, false, vFiles);
     }
     
     public boolean fastAllFilesUnderSvn(@Nullable Project project, VirtualFile... vFiles) {
@@ -98,8 +85,7 @@ public class FileStatusCalculator {
     }
 
     private Optional<VirtualFile> getWCRoot(File currentFile) {
-        //TODO: there is also #getWorkingCopyRootNew for Svn 1.8
-        File root = SvnUtil.getWorkingCopyRootNew(currentFile);
+        File root = SvnUtil.getWorkingCopyRoot(currentFile);
         if (root == null) {
           LOG.debug("WC root not found for: file=", currentFile.getAbsolutePath());
           return Optional.empty();
@@ -134,7 +120,18 @@ public class FileStatusCalculator {
         }
       return Optional.empty();
     }
-    
+
+    private boolean isSwitchedRevision(@NotNull SvnVcs svn, @NotNull Info info) {
+        File current = info.getFile();
+        File parent = current.getParentFile();
+        //TODO: check if parent is under WC Root
+        Info parentInfo = svn.getInfo(parent);
+        if (parentInfo != null) {
+            return !info.getRevision().equals(parentInfo.getRevision());
+        }
+        return false;
+    }
+
     @NotNull
     public FileStatus statusFor(@NotNull SvnVcs svn, @NotNull Project project, @NotNull VirtualFile vFile) {
         File currentFile = VfsUtilCore.virtualToIoFile(vFile);
@@ -142,9 +139,8 @@ public class FileStatusCalculator {
         if (fileUrl != null) {
             Info info = svn.getInfo(vFile);
             if (info != null) {
-                SvnConfiguration svnConfig = SvnConfiguration.getInstance(project);
-                Optional<FileStatus> status;
-                status = statusForCli(project, fileUrl, currentFile);
+                boolean switchedRevision = isSwitchedRevision(svn, info);
+                Optional<FileStatus> status = statusForCli(project, fileUrl, currentFile);
                 if (status.isPresent()) {
                     return status.get();
                 }

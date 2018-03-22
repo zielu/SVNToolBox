@@ -3,13 +3,13 @@
  */
 package zielu.svntoolbox.async;
 
-import com.intellij.openapi.application.AccessToken;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.DumbService.DumbModeListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.ThrowableComputable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.messages.MessageBusConnection;
@@ -181,17 +181,8 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
                 try {
                     StatusRequest request = myRequestQueue.poll(150, TimeUnit.MILLISECONDS);
                     if (request != null) {
-                        if (myPendingFiles.remove(request.file)) {                                                        
-                            AccessToken token = ApplicationManager.getApplication().acquireReadActionLock();
-                            LogStopwatch watch = LogStopwatch.debugStopwatch(PV_SEQ,
-                                    new MfSupplier("Status calculation for {0}", request.file)).start();
-                            FileStatus status;
-                            try {                                                                                                 
-                                status = myStatusCalc.statusFor(request.project, request.file);                                                                                                
-                            } finally {
-                                token.finish();
-                                watch.stop();
-                            }
+                      if (myPendingFiles.remove(request.file)) {
+                        FileStatus status = readStatus(request);
                             ProjectViewStatus viewStatus;
                             if (status.isUnderVcs()) {
                                 if (status.getBranchName().isPresent()) {
@@ -236,4 +227,19 @@ public class AsyncFileStatusCalculator extends AbstractProjectComponent implemen
             }
         }
     }
+
+  private FileStatus readStatus(StatusRequest request) {
+    return ApplicationManager.getApplication()
+        .runReadAction((ThrowableComputable<FileStatus, RuntimeException>) () -> fetchStatus(request));
+  }
+
+  private FileStatus fetchStatus(StatusRequest request) {
+    LogStopwatch watch = LogStopwatch.debugStopwatch(PV_SEQ,
+        new MfSupplier("Status calculation for {0}", request.file)).start();
+    try {
+      return myStatusCalc.statusFor(request.project, request.file);
+    } finally {
+      watch.stop();
+    }
+  }
 }
