@@ -1,4 +1,0 @@
-<category name="#zielu.svntoolbox">
-    <level value="DEBUG" />
-    <appender-ref ref="FILE" />
-</category>

@@ -4,15 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
+import org.jetbrains.idea.svn.SvnUtil;
+import org.jetbrains.idea.svn.api.Url;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.tmatesoft.svn.core.SVNURL;
 
 @RunWith(Parameterized.class)
 public class FileStatusEncodingTest {
-  private SVNURL baseUrl;
+  private Url baseUrl;
 
   @Parameterized.Parameters(name = "URL={0}, branchName={1}")
   public static Collection<Object[]> data() {
@@ -29,17 +30,17 @@ public class FileStatusEncodingTest {
     });
   }
 
-  private SVNURL branchUrl;
+  private Url branchUrl;
   private String expectedBranchName;
 
   public FileStatusEncodingTest(String branchUrl, String expectedBranchName) throws Exception {
-    this.branchUrl = SVNURL.parseURIEncoded(branchUrl);
+    this.branchUrl = SvnUtil.parseUrl(branchUrl);
     this.expectedBranchName = expectedBranchName;
   }
 
   @Before
   public void before() throws Exception {
-    baseUrl = SVNURL.parseURIEncoded("http://localhost:3690/repo");
+    baseUrl = SvnUtil.parseUrl("http://localhost:3690/repo");
   }
 
   @Test

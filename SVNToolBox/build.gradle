@@ -2,12 +2,13 @@ import java.text.SimpleDateFormat
 
 buildscript {
     repositories {
-        maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
+        mavenCentral()
     }
 }
 
 plugins {
     id "org.jetbrains.intellij" version "0.2.18"
+    id 'com.palantir.git-version' version '0.10.1'
 }
 
 repositories {
@@ -36,9 +37,13 @@ idea {
     }
 }
 
-version = "${version}"
 if (version.endsWith("-dev")) {
     version += ".${buildTime()}"
+    def details = versionDetails()
+    version += ".${details.gitHash}"
+    if (!details.isClean) {
+        version += ".dirty"
+    }
 }
 
 def static buildTime() {
@@ -56,5 +61,5 @@ compileTestJava {
 }
 
 dependencies {
-    testCompile 'org.assertj:assertj-core:3.9.0'
+    testCompile "org.assertj:assertj-core:${assertjVersion}"
 }

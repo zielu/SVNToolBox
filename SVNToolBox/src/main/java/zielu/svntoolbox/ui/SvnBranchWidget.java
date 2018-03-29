@@ -260,7 +260,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
             ApplicationManager.getApplication().invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, () -> "UpdateUi").start();
+                    LogStopwatch watch = LogStopwatch.debugStopwatch(() -> "UpdateUi").start();
                     UpdateResult result = maybeResult.get();
                     boolean empty = true;
                     AtomicBoolean updated = new AtomicBoolean();
@@ -305,7 +305,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
     }
 
     private Optional<UpdateResult> update(@NotNull Project project, Optional<VirtualFile> vcsRoot) {
-        LogStopwatch watch = LogStopwatch.debugStopwatch(LOG, () -> "Update").start();
+        LogStopwatch watch = LogStopwatch.debugStopwatch(() -> "Update").start();
         SvnVcs svn = SvnVcs.getInstance(project);
         FileStatus status = null;
         VirtualFile currentVf = null;
