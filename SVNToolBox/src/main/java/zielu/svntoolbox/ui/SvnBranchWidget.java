@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.svn.SvnVcs;
-import org.jetbrains.idea.svn.branchConfig.BranchConfigurationDialog;
 import zielu.svntoolbox.FileStatus;
 import zielu.svntoolbox.FileStatusCalculator;
 import zielu.svntoolbox.SvnToolBoxBundle;
@@ -279,7 +278,7 @@ public class SvnBranchWidget extends EditorBasedWidget implements StatusBarWidge
                         watch.stop();
                         if (maybeOpenBranchConfig && maybeResult.isPresent()) {
                             if (result.canConfigureBranches() && !result.status.getBranchName().isPresent()) {
-                                BranchConfigurationDialog.configureBranches(result.project, result.file);
+                                BranchConfigUi.configureBranches(result.project, result.file);
                             }
                         }
                     }

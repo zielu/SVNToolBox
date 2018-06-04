@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.svn.SvnBundle;
-import org.jetbrains.idea.svn.branchConfig.BranchConfigurationDialog;
+import zielu.svntoolbox.ui.BranchConfigUi;
 
 /**
  * <p></p>
@@ -25,6 +25,6 @@ public class ConfigureBranchesAction extends VirtualFileUnderSvnActionBase {
 
     @Override
     protected void perform(AnActionEvent e, @NotNull Project project, @NotNull VirtualFile file) {
-        BranchConfigurationDialog.configureBranches(project, file);
+        BranchConfigUi.configureBranches(project, file);
     }
 }
