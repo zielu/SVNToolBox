@@ -37,10 +37,9 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes is 181.0.0</h3>
+      <h3>Changes is 181.0.1-dev</h3>
       <ul>
-        <li>Compatible with 181.*</li>
-        <li>Fixed error when trying to show lock info in a locked file (#23)</li>
+        <li>Fixed NullPointer in package decoration (#25)</li>
       </ul>
       <h3>Changes is 173.0.2</h3>
       <ul>

@@ -40,9 +40,11 @@ public class PackageDecoration extends AbstractNodeDecoration {
             PsiDirectoryNode dirNode = (PsiDirectoryNode) node;
             final Project project = dirNode.getProject();
             final PsiDirectory psiDirectory = dirNode.getValue();
-            final VirtualFile directoryFile = psiDirectory.getVirtualFile();
-            return ProjectRootsUtil.isInSource(directoryFile, project) ||
-                    ProjectRootsUtil.isInTestSource(directoryFile, project);
+            if (project != null && psiDirectory != null) {
+                final VirtualFile directoryFile = psiDirectory.getVirtualFile();
+                return ProjectRootsUtil.isInSource(directoryFile, project) ||
+                        ProjectRootsUtil.isInTestSource(directoryFile, project);
+            }
         }
         return false;
     }
