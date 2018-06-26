@@ -37,7 +37,7 @@
   </description>
 
   <change-notes><![CDATA[
-      <h3>Changes is 181.0.1-dev</h3>
+      <h3>Changes is 181.0.1</h3>
       <ul>
         <li>Fixed NullPointer in package decoration (#25)</li>
       </ul>
