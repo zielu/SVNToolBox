@@ -9,7 +9,9 @@
 
   <description><![CDATA[
     <h2>Enriches SVN integration</h2>
-    Following functionality was added:
+    <h3>Development status</h3>
+    Maintenance - bug fixes and releases for new IntelliJ versions
+    <h3>Features</h3>
     <ul>
       <li><b>Status bar component:</b>
         <ul>
