@@ -18,6 +18,14 @@ Decisions are stored [here](./SVNToolBox/doc/arch).
 
 ## Building & running
 
+### Using docker compose
+Run ```docker-compose up``` inside ```dev-env``` directory. This will start local svn server on port 13690.
+Available user account can be examined in ```dev-env/passwd``` file.
+
+Default repository URL is ```svn://localhost:13690/repos```.
+
+Next import sample repository into running server from ```dev-env/repo```.
+
 ### Development builds
 If version set in [gradle.properties](./SVNToolBox/gradle.properties) ends with `-dev` then build datetime in UTC
 timezone will be appended, current Git hash and
