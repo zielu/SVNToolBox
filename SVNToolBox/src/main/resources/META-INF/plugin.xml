@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/zielu/SVNToolBox">
   <id>zielu.svntoolbox</id>
   <name>SVNToolBox</name>
-  <version>183.0.0-dev</version>
+  <version>191.0.0-dev</version>
   <vendor url="https://github.com/zielu/SVNToolBox">Lukasz Zielinski</vendor>
   <depends>com.intellij.modules.lang</depends>
   <depends>Subversion</depends>
@@ -39,6 +39,10 @@
   </description>
 
   <change-notes><![CDATA[
+      <h3>Changes is 191.0.0</h3>
+      <ul>
+        <li>IntelliJ 2019.1+ compatibility</li>
+      </ul>
       <h3>Changes is 183.1.0</h3>
       <ul>
         <li>All products 2018.3 compatibility</li>
@@ -79,7 +83,7 @@
   </change-notes>
 
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="183" until-build="183.*"/>
+  <idea-version since-build="191"/>
 
   <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
        on how to target different products -->
