@@ -3,11 +3,9 @@ package zielu.svntoolbox.lockinfo;
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
-import com.google.common.io.Closer;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
-import com.jgoodies.common.base.Strings;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -38,10 +36,8 @@ public class SvnLockOwnerComponent implements ApplicationComponent {
     }
 
     private Map<String, String> loadFile(File csvFile) {
-        Closer closer = Closer.create();
-        try {
+        try (BufferedReader reader = Files.newBufferedReader(csvFile.toPath(), Charsets.UTF_8)) {
             Map<String, String> mappings = Maps.newHashMap();
-            BufferedReader reader = closer.register(Files.newBufferedReader(csvFile.toPath(), Charsets.UTF_8));
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 List<String> columns = semicolon.splitToList(line);
                 if (columns.size() > 1) {
@@ -51,12 +47,6 @@ public class SvnLockOwnerComponent implements ApplicationComponent {
             return mappings;
         } catch (IOException e) {
             LOG.error("Failed to load csv file: " + csvFile, e);
-        } finally {
-            try {
-                closer.close();
-            } catch (IOException e) {
-                LOG.error("Failed to close csv file: " + csvFile, e);
-            }
         }
         return Collections.emptyMap();
     }
@@ -83,19 +73,16 @@ public class SvnLockOwnerComponent implements ApplicationComponent {
     }
 
     public String getOwner(String owner) {
-        if (Strings.isBlank(owner)) {
+        if (StringUtils.isBlank(owner)) {
             return StringUtils.EMPTY;
         } else {
             String csvFile = SvnToolBoxAppState.getInstance().getCsvFile();
-            if (Strings.isBlank(csvFile)) {
+            if (StringUtils.isBlank(csvFile)) {
                 return owner;
             } else {
-                Optional<String> mappedOwner = loadFromMappings(owner, csvFile);
-                if (mappedOwner.isPresent()) {
-                    return owner + " - " + mappedOwner.get();
-                } else {
-                    return owner;
-                }
+                return loadFromMappings(owner, csvFile)
+                    .map(mappedOwner -> owner + " - " + mappedOwner)
+                    .orElse(owner);
             }
         }
     }

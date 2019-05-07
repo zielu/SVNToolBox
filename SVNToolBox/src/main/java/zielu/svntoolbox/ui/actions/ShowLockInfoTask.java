@@ -14,13 +14,11 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.components.JBList;
 import com.intellij.util.ui.UIUtil;
-import com.jgoodies.common.base.Strings;
 import java.awt.datatransfer.StringSelection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import javax.swing.JList;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.svn.SvnVcs;
 import org.jetbrains.idea.svn.api.Revision;
@@ -113,24 +111,18 @@ public class ShowLockInfoTask extends FileBackgroundable {
   }
 
   private void showLockPopup(List<String> datas) {
-    final JList<String> list = new JBList<>(datas);
-
     JBPopupFactory.getInstance()
-        .createListPopupBuilder(list)
+        .createPopupChooserBuilder(datas)
         .setTitle(getString("configurable.app.svnlock.title"))
         .setResizable(true)
-        .setItemChoosenCallback(() -> itemChosen(list))
+        .setItemChosenCallback(this::itemChosen)
         .createPopup()
         .showInFocusCenter();
   }
 
-  private void itemChosen(JList<String> list) {
-    if (list.getSelectedIndices().length > 0) {
-      String selectedValue = list.getSelectedValue();
-
-      if (Strings.isNotBlank(selectedValue) && selectedValue.contains(FIELD_DELIMITER)) {
-        CopyPasteManager.getInstance().setContents(new StringSelection(getLast(splitter.split(selectedValue))));
-      }
+  private void itemChosen(String selectedValue) {
+    if (StringUtils.isNotBlank(selectedValue) && selectedValue.contains(FIELD_DELIMITER)) {
+      CopyPasteManager.getInstance().setContents(new StringSelection(getLast(splitter.split(selectedValue))));
     }
   }
 }
