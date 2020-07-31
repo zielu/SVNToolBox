@@ -7,7 +7,7 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.3.12"
+    id "org.jetbrains.intellij" version "0.4.21"
     id 'com.palantir.git-version' version '0.10.1'
 }
 
@@ -24,7 +24,7 @@ targetCompatibility = javaVersion
 
 intellij {
     version ideaVersion
-    plugins 'svn4idea'
+    plugins 'svn4idea', 'java'
     updateSinceUntilBuild false
     downloadSources true
 }
