@@ -6,6 +6,10 @@ import com.google.common.collect.Maps;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import zielu.svntoolbox.config.SvnToolBoxAppState;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -16,23 +20,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import zielu.svntoolbox.config.SvnToolBoxAppState;
 
 public class SvnLockOwnerComponent implements ApplicationComponent {
     private static final Splitter semicolon = Splitter.on(';');
 
-    private final Logger LOG = Logger.getInstance(getClass());
+    private final Logger log = Logger.getInstance(getClass());
     private final Map<String, String> ownerMapping = Maps.newHashMap();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public static SvnLockOwnerComponent getInstance() {
         return ApplicationManager.getApplication().getComponent(SvnLockOwnerComponent.class);
-    }
-
-    @Override
-    public void initComponent() {
     }
 
     private Map<String, String> loadFile(File csvFile) {
@@ -46,7 +43,7 @@ public class SvnLockOwnerComponent implements ApplicationComponent {
             }
             return mappings;
         } catch (IOException e) {
-            LOG.error("Failed to load csv file: " + csvFile, e);
+            log.error("Failed to load csv file: " + csvFile, e);
         }
         return Collections.emptyMap();
     }

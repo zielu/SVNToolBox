@@ -37,9 +37,7 @@ public class ClassFileDecoration extends AbstractNodeDecoration {
     public boolean isForMe(ProjectViewNode node) {
         if (node instanceof ClassTreeNode) {
             ClassTreeNode classNode = (ClassTreeNode) node;
-            if (classNode.isTopLevel()) {
-                return true;
-            }
+            return classNode.isTopLevel();
         }
         return false;
     }

@@ -12,6 +12,11 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.Extensions;
+import org.jetbrains.annotations.NotNull;
+import zielu.svntoolbox.extensions.NodeDecorationEP;
+import zielu.svntoolbox.ui.projectView.NodeDecoration;
+import zielu.svntoolbox.ui.projectView.impl.EmptyDecoration;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,10 +26,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import org.jetbrains.annotations.NotNull;
-import zielu.svntoolbox.extensions.NodeDecorationEP;
-import zielu.svntoolbox.ui.projectView.NodeDecoration;
-import zielu.svntoolbox.ui.projectView.impl.EmptyDecoration;
 
 /**
  * <p></p>
@@ -34,15 +35,18 @@ import zielu.svntoolbox.ui.projectView.impl.EmptyDecoration;
  * @author Lukasz Zielinski
  */
 public class SvnToolBoxApp implements ApplicationComponent {
-    private final Logger LOG = Logger.getInstance(getClass());
+    private final Logger log = Logger.getInstance(getClass());
     private final List<NodeDecoration> myNodeDecorations = Lists.newArrayList();
-    public static final NotificationGroup NOTIFICATION = new NotificationGroup("SVN ToolBox Messages", NotificationDisplayType.STICKY_BALLOON, true);
-
+    private NotificationGroup notification;
     private ExecutorService myExecutor;
     private ScheduledExecutorService myScheduledExecutor;
 
     public static SvnToolBoxApp getInstance() {
         return ApplicationManager.getApplication().getComponent(SvnToolBoxApp.class);
+    }
+
+    public NotificationGroup notification() {
+        return notification;
     }
 
     public Future<?> submit(Runnable task) {
@@ -55,6 +59,7 @@ public class SvnToolBoxApp implements ApplicationComponent {
 
     @Override
     public void initComponent() {
+        notification = new NotificationGroup("SVN ToolBox Messages", NotificationDisplayType.STICKY_BALLOON, true);
         myExecutor = Executors.newCachedThreadPool(
                 new ThreadFactoryBuilder()
                         .setDaemon(true)
@@ -73,7 +78,7 @@ public class SvnToolBoxApp implements ApplicationComponent {
         for (NodeDecorationEP decorationEP : nodeDecorationEPs) {
             NodeDecoration decoration = decorationEP.instantiate();
             myNodeDecorations.add(decoration);
-          LOG.debug("Added decoration ", decorationEP.priority, " ", decoration);
+          log.debug("Added decoration ", decorationEP.priority, " ", decoration);
         }
     }
 

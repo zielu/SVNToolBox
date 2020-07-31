@@ -19,14 +19,15 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFileMoveEvent;
 import com.intellij.openapi.vfs.ex.VirtualFileManagerEx;
 import com.intellij.util.messages.MessageBusConnection;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 import zielu.svntoolbox.FileStatusCalculator;
 import zielu.svntoolbox.SvnToolBoxProject;
 import zielu.svntoolbox.config.SvnToolBoxProjectState;
 import zielu.svntoolbox.util.Vfs;
+
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 /**
  * <p></p>
@@ -36,7 +37,7 @@ import zielu.svntoolbox.util.Vfs;
  * @author Lukasz Zielinski
  */
 public class ProjectViewManager extends AbstractProjectComponent {
-    private final Logger LOG = Logger.getInstance(getClass());
+    private final Logger log = Logger.getInstance(getClass());
 
     private final AtomicBoolean myActive = new AtomicBoolean();
 
@@ -45,7 +46,7 @@ public class ProjectViewManager extends AbstractProjectComponent {
     private MessageBusConnection myConnection;
     private VirtualFileListener myVfListener;
 
-    private Supplier<Integer> PV_SEQ;
+    private Supplier<Integer> pvSeq;
 
     public ProjectViewManager(Project project) {
         super(project);
@@ -67,8 +68,8 @@ public class ProjectViewManager extends AbstractProjectComponent {
                     public void run() {
                         if (myActive.get()) {
                             final ProjectView projectView = ProjectView.getInstance(project);
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("[" + PV_SEQ.get() + "] Refreshing Project View");
+                            if (log.isDebugEnabled()) {
+                                log.debug("[" + pvSeq.get() + "] Refreshing Project View");
                             }
                             projectView.refresh();
                         }
@@ -76,18 +77,17 @@ public class ProjectViewManager extends AbstractProjectComponent {
                 });
             }
         } else {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[" + PV_SEQ.get() + "] Project View refresh ignored - decorations disabled");
+            if (log.isDebugEnabled()) {
+                log.debug("[" + pvSeq.get() + "] Project View refresh ignored - decorations disabled");
             }
         }
     }
 
     @Override
     public void initComponent() {
-        super.initComponent();
         if (myActive.compareAndSet(false, true)) {
-            PV_SEQ = SvnToolBoxProject.getInstance(myProject).sequence();
-            myStatusCache = new ProjectViewStatusCache(PV_SEQ);
+            pvSeq = SvnToolBoxProject.getInstance(myProject).sequence();
+            myStatusCache = new ProjectViewStatusCache(pvSeq);
             myConnection = myProject.getMessageBus().connect();
             myConnection.subscribe(DecorationToggleNotifier.TOGGLE_TOPIC, new DecorationToggleNotifier() {
                 @Override
@@ -114,8 +114,8 @@ public class ProjectViewManager extends AbstractProjectComponent {
                 @Override
                 public void consume(Set<String> paths) {
                     final Set<String> localPaths = Sets.newLinkedHashSet(paths);
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("[" + PV_SEQ.get() + "] Updated paths: " + localPaths);
+                    if (log.isDebugEnabled()) {
+                        log.debug("[" + pvSeq.get() + "] Updated paths: " + localPaths);
                     }
                     ApplicationManager.getApplication().invokeLater(new Runnable() {
                         @Override
@@ -125,8 +125,8 @@ public class ProjectViewManager extends AbstractProjectComponent {
                             List<VirtualFile> vFilesUnderSvn = myStatusCalc.filterUnderSvn(myProject, vFiles);
                             boolean somethingUnderSvn = vFilesUnderSvn.size() > 0;
                             if (somethingEvicted || somethingUnderSvn) {
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("[" + PV_SEQ.get() + "] Requesting project view refresh: somethingEvicted=" + somethingEvicted + ", somethingUnderSvn=" + somethingUnderSvn);
+                                if (log.isDebugEnabled()) {
+                                    log.debug("[" + pvSeq.get() + "] Requesting project view refresh: somethingEvicted=" + somethingEvicted + ", somethingUnderSvn=" + somethingUnderSvn);
                                 }
                                 refreshProjectView(myProject);
                             }
@@ -138,16 +138,16 @@ public class ProjectViewManager extends AbstractProjectComponent {
             myVfListener = new VirtualFileListener() {
                 @Override
                 public void beforeFileDeletion(VirtualFileEvent event) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("[" + PV_SEQ.get() + "] Before deletion: " + event);
+                    if (log.isDebugEnabled()) {
+                        log.debug("[" + pvSeq.get() + "] Before deletion: " + event);
                     }
                     myStatusCache.evict(event.getFile());
                 }
 
                 @Override
                 public void beforeFileMovement(VirtualFileMoveEvent event) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("[" + PV_SEQ.get() + "] Before move: " + event);
+                    if (log.isDebugEnabled()) {
+                        log.debug("[" + pvSeq.get() + "] Before move: " + event);
                     }
                     myStatusCache.evict(event.getFile());
                 }
@@ -169,6 +169,5 @@ public class ProjectViewManager extends AbstractProjectComponent {
             }
             myStatusCache.dispose();
         }
-        super.disposeComponent();
     }
 }

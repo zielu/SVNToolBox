@@ -9,10 +9,11 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
-import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 import zielu.svntoolbox.ui.SvnBranchWidget;
 import zielu.svntoolbox.util.IntegerSequenceSupplier;
+
+import java.util.function.Supplier;
 
 /**
  * <p></p>
@@ -22,9 +23,9 @@ import zielu.svntoolbox.util.IntegerSequenceSupplier;
  * @author Lukasz Zielinski
  */
 public class SvnToolBoxProject extends AbstractProjectComponent {
-    private final Logger LOG = Logger.getInstance(getClass());
+    private final Logger log = Logger.getInstance(getClass());
 
-    private final Supplier<Integer> PV_SEQ = new IntegerSequenceSupplier();
+    private final Supplier<Integer> pvSeq = new IntegerSequenceSupplier();
     
     private SvnBranchWidget myBranchWidget;    
     
@@ -37,7 +38,7 @@ public class SvnToolBoxProject extends AbstractProjectComponent {
     }    
     
     public Supplier<Integer> sequence() {
-        return PV_SEQ;
+        return pvSeq;
     }
     
     @Override
@@ -49,7 +50,7 @@ public class SvnToolBoxProject extends AbstractProjectComponent {
                 statusBar.addWidget(myBranchWidget, myProject);
             }
         }
-        LOG.debug("Project opened");
+        log.debug("Project opened");
     }
 
     @Override
@@ -60,6 +61,6 @@ public class SvnToolBoxProject extends AbstractProjectComponent {
                 statusBar.removeWidget(myBranchWidget.ID());
             }
         }
-        LOG.debug("Project closed");
+        log.debug("Project closed");
     }
 }
