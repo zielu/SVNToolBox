@@ -46,7 +46,7 @@ gradle clean test
 ```
 Update gradlew version
 ```
-gradle wrapper --gradle-version 4.4.1 --distribution-type ALL
+gradle wrapper --gradle-version 6.4.1 --distribution-type ALL
 ```
 
 ### Useful run commands
