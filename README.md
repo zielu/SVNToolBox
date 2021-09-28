@@ -4,7 +4,7 @@ SVNToolBox
 Enhances IntelliJ IDEA SVN integration
 
 ## Development status
-Plugin is in strict maintenance mode so no new features are expected only bug fixes and releases for new IntelliJ versions.
+Plugin is deprecated - there will be no new releases or bug-fixes.
 
 ## Jetbrains plugin repository
 [Plugin repository page](https://plugins.jetbrains.com/plugin/7321-svntoolbox)
